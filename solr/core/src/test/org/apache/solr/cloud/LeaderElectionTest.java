@@ -231,11 +231,11 @@ public class LeaderElectionTest extends SolrTestCaseJ4 {
 //        "http://127.0.0.1/solr/", ZkStateReader.CORE_NAME_PROP, "");
 //    ZkController zkController = MockSolrSource.makeSimpleMock(null, null, zkClient);
 //    ElectionContext context = new ShardLeaderElectionContextBase(elector,
-//        "shard2", "collection1", "dummynode1", props, zkController);
+//        "s2", "collection1", "dummynode1", props, zkController);
 //    elector.setup(context);
 //    elector.joinElection(context, false);
 //    assertEquals("http://127.0.0.1/solr/",
-//        getLeaderUrl("collection1", "shard2"));
+//        getLeaderUrl("collection1", "s2"));
 //  }
 
   // MRM TODO:

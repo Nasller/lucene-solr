@@ -151,6 +151,15 @@ public class SolrMetricsIntegrationTest extends SolrTestCaseJ4 {
       // MRM TODO: - those timers are disabled right now
       // assertEquals("metric counter incorrect", iterations, finalCount - initialCount);
       Map<String,SolrMetricReporter> reporters = metricManager.getReporters(coreMetricManager.getRegistryName());
+
+      for (int i = 0; i < 5; i++) {
+        if ((RENAMED_REPORTERS.length + jmxReporter) != reporters.size()) {
+          Thread.sleep(100);
+        } else {
+          break;
+        }
+      }
+
       assertEquals(RENAMED_REPORTERS.length + jmxReporter, reporters.size());
 
       // SPECIFIC and MULTIREGISTRY were skipped because they were

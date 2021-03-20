@@ -99,9 +99,11 @@ public class ZkStateWriter {
         String collectionName = docCollection.getName();
         ColState collState = collLocks.compute(collectionName, (s, colState) -> {
           if (colState == null) {
+            log.debug("create new collection lock for {}", collectionName);
             ColState cState = new ColState();
             return cState;
           }
+          log.debug("use existing collection lock for {}", collectionName);
           return colState;
         });
         collState.collLock.lock();
@@ -121,6 +123,7 @@ public class ZkStateWriter {
               Slice currentSlice = currentCollection.getSlice(slice.getName());
               if (currentSlice != null) {
                 if (currentSlice.get("remove") != null || slice.getProperties().get("remove") != null) {
+                  log.debug("remove slice {}", slice.getName());
                   removeSlices.add(slice.getName());
                 } else {
                   currentCollection.getSlicesMap().put(slice.getName(), slice.update(currentSlice));
@@ -146,7 +149,11 @@ public class ZkStateWriter {
             for (String removeSlice : removeSlices) {
               currentCollection.getSlicesMap().remove(removeSlice);
             }
-            cs.put(currentCollection.getName(), currentCollection);
+
+            DocCollection newCollection = new DocCollection(collectionName, currentCollection.getSlicesMap(), currentCollection.getProperties(), currentCollection.getRouter(),
+                currentCollection.getZNodeVersion(), (ConcurrentHashMap) currentCollection.getStateUpdates());
+            log.debug("zkwriter newCollection={}", newCollection);
+            cs.put(currentCollection.getName(), newCollection);
 
           } else {
             docCollection.getProperties().remove("pullReplicas");
@@ -166,7 +173,9 @@ public class ZkStateWriter {
             for (String removeSlice : removeSlices) {
               docCollection.getSlicesMap().remove(removeSlice);
             }
-
+            String path = ZkStateReader.getCollectionPath(collectionName);
+            Stat stat = reader.getZkClient().exists(path, null, false, false);
+           // docCollection.setZnodeVersion(stat.getVersion());
             cs.put(docCollection.getName(), docCollection);
           }
 
@@ -196,16 +205,23 @@ public class ZkStateWriter {
               //throw new SolrException(SolrException.ErrorCode.SERVER_ERROR, "Collection not found by id=" + collectionId);
             }
 
-            ConcurrentHashMap updates = stateUpdates.get(collection);
-            if (updates == null) {
-              updates = new ConcurrentHashMap();
-              stateUpdates.put(collection, updates);
-            }
 
+            ConcurrentHashMap updates;
             DocCollection docColl = cs.get(collection);
             String csVersion;
             if (docColl != null) {
-              csVersion = Integer.toString(docColl.getZNodeVersion());
+
+              updates = stateUpdates.get(collection);
+              if (updates == null) {
+                updates = (ConcurrentHashMap) docColl.getStateUpdates();
+                if (updates == null) {
+                  updates = new ConcurrentHashMap();
+                }
+                stateUpdates.put(collection, updates);
+              }
+
+              int clusterStateVersion = docColl.getZNodeVersion();
+              csVersion = Integer.toString(clusterStateVersion);
               for (StateUpdate state : entry.getValue().values()) {
                 if (state.sliceState != null) {
                   Slice slice = docColl.getSlice(state.sliceName);
@@ -258,7 +274,8 @@ public class ZkStateWriter {
 
                     log.trace("add new slice leader={} {} {}", newSlice.getLeader(), newSlice, docColl);
 
-                    DocCollection newDocCollection = new DocCollection(collection, newSlices, docColl.getProperties(), docColl.getRouter(), docColl.getZNodeVersion(), docColl.getStateUpdates());
+                    DocCollection newDocCollection = new DocCollection(collection, newSlices, docColl.getProperties(), docColl.getRouter(), docColl.getZNodeVersion(),
+                        (ConcurrentHashMap) docColl.getStateUpdates());
                     cs.put(collection, newDocCollection);
                     docColl = newDocCollection;
                     updates.put(replica.getInternalId(), "l");
@@ -287,7 +304,8 @@ public class ZkStateWriter {
 
                     log.trace("add new slice leader={} {}", newSlice.getLeader(), newSlice);
 
-                    DocCollection newDocCollection = new DocCollection(collection, newSlices, docColl.getProperties(), docColl.getRouter(), docColl.getZNodeVersion(), docColl.getStateUpdates());
+                    DocCollection newDocCollection = new DocCollection(collection, newSlices, docColl.getProperties(), docColl.getRouter(), docColl.getZNodeVersion(),
+                        (ConcurrentHashMap) docColl.getStateUpdates());
                     cs.put(collection, newDocCollection);
                     docColl = newDocCollection;
                     updates.put(replica.getInternalId(), state.state);
@@ -298,6 +316,12 @@ public class ZkStateWriter {
                 }
               }
             } else {
+              updates = stateUpdates.get(collection);
+              if (updates == null) {
+                updates = new ConcurrentHashMap();
+                stateUpdates.put(collection, updates);
+              }
+
               for (StateUpdate state : entry.getValue().values()) {
                 log.debug("Could not find existing collection name={}", collection);
                 String setState = Replica.State.shortStateToState(state.state).toString();
@@ -350,7 +374,7 @@ public class ZkStateWriter {
           write(collection);
           break;
         } catch (KeeperException.BadVersionException e) {
-
+          log.warn("hit bad version trying to write state.json, trying again ...");
         } catch (Exception e) {
           log.error("write pending failed", e);
           break;
@@ -409,7 +433,7 @@ public class ZkStateWriter {
           if (log.isDebugEnabled()) log.debug("Write state.json prevVersion={} bytes={} col={}", collection.getZNodeVersion(), data.length, collection);
 
           Integer finalVersion = collection.getZNodeVersion();
-          dirtyStructure.remove(collection.getName());
+
           if (reader == null) {
             log.error("read not initialized in zkstatewriter");
           }
@@ -422,15 +446,17 @@ public class ZkStateWriter {
 
             stat = reader.getZkClient().setData(path, data, finalVersion, true, false);
             collection.setZnodeVersion(finalVersion + 1);
-
+            dirtyStructure.remove(collection.getName());
             if (log.isDebugEnabled()) log.debug("set new version {} {}", collection.getName(), stat.getVersion());
           } catch (KeeperException.NoNodeException e) {
             log.debug("No node found for state.json", e);
 
           } catch (KeeperException.BadVersionException bve) {
             stat = reader.getZkClient().exists(path, null, false, false);
-            log.info("Tried to update state.json ({}) with bad version {} \n {}", collection, finalVersion, stat != null ? stat.getVersion() : "null");
+            log.info("Tried to update state.json for {} with bad version {} found={} \n {}", coll, finalVersion, stat != null ? stat.getVersion() : "null", collection);
 
+            // TODO: likely we should be extra safe and assume bad things and force fetch the state.json to get a new DocCollection
+            collection.setZnodeVersion(stat.getVersion());
             throw bve;
           }
 
@@ -438,6 +464,7 @@ public class ZkStateWriter {
 
           ConcurrentHashMap updates = stateUpdates.get(collection.getName());
           if (updates != null) {
+            // TODO: clearing these correctly is tricky
             updates.clear();
             writeStateUpdates(collection, updates);
           }
@@ -463,13 +490,14 @@ public class ZkStateWriter {
         log.error("Failed processing update=" + collection, e);
       }
 
-      if (badVersionException.get() != null) {
-        throw badVersionException.get();
-      }
-
     } finally {
       collState.collLock.unlock();
     }
+
+    if (badVersionException.get() != null) {
+      throw badVersionException.get();
+    }
+
   }
 
   private void writeStateUpdates(DocCollection collection, ConcurrentHashMap updates) throws KeeperException, InterruptedException {

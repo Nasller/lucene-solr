@@ -103,7 +103,7 @@ public class Slice extends ZkNodeProps implements Iterable<Replica> {
       Object removed = replica.getProperties().remove("numShards");
     }
 
-    for (Replica replica : replicas.values()) {
+    for (Replica replica : currentSlice.getReplicas()) {
       if (!replicas.containsKey(replica.getName())) {
         replicas.put(replica.getName(), replica);
       }

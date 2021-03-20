@@ -175,6 +175,13 @@ public class ChaosMonkeySafeLeaderTest extends SolrCloudBridgeTestCase {
       if (collectionState == null) return false;
       Collection<Slice> slices = collectionState.getSlices();
       for (Slice slice : slices) {
+
+        try {
+          cluster.getSolrClient().getZkStateReader().getLeaderRetry(COLLECTION, slice.getName(), 5000, true);
+        } catch (Exception e) {
+          log.error("exception waiting for leaders", e);
+          return false;
+        }
         for (Replica replica : slice.getReplicas()) {
           if (cluster.getSolrClient().getZkStateReader().isNodeLive(replica.getNodeName())) {
               if (replica.getState() != Replica.State.ACTIVE) {

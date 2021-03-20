@@ -106,7 +106,6 @@ import org.apache.solr.update.DirectUpdateHandler2;
 import org.apache.solr.update.IndexFingerprint;
 import org.apache.solr.update.SolrCoreState;
 import org.apache.solr.update.SolrCoreState.IndexWriterCloser;
-import org.apache.solr.update.SolrIndexWriter;
 import org.apache.solr.update.UpdateHandler;
 import org.apache.solr.update.VersionInfo;
 import org.apache.solr.update.processor.DistributedUpdateProcessorFactory;
@@ -505,10 +504,15 @@ public final class SolrCore implements SolrInfoBean, Closeable {
   }
 
   public void setName(String v) {
+    if (v.equals(this.name)) {
+      return;
+    }
     this.name = v;
     this.logid = (v == null) ? "" : ("[" + v + "] ");
     if (coreMetricManager != null) {
-      coreMetricManager.afterCoreSetName();
+      ParWork.getRootSharedExecutor().submit(() -> {
+        coreMetricManager.afterCoreSetName();
+      });
     }
   }
 
@@ -736,7 +740,7 @@ public final class SolrCore implements SolrInfoBean, Closeable {
       core = new SolrCore(coreContainer, getName(), coreConfig, cd, getDataDir(), updateHandler, solrDelPolicy, currentCore, true);
       core.start();
       // we open a new IndexWriter to pick up the latest config
-      core.getUpdateHandler().getSolrCoreState().newIndexWriter(core, false);
+      core.getUpdateHandler().getSolrCoreState().newIndexWriter(core, false, false);
       //   core.getSearcher(true, false, null, true);
       success = true;
       return core;
@@ -804,7 +808,7 @@ public final class SolrCore implements SolrInfoBean, Closeable {
      * @deprecated Use of this method can only lead to race conditions. Try
      * to actually obtain a lock instead.
      */
-    @Deprecated private static boolean isWriterLocked (Directory directory) throws IOException {
+    @Deprecated private static boolean isWriterLocked(Directory directory) throws IOException {
       try {
         directory.obtainLock(IndexWriter.WRITE_LOCK_NAME).close();
         return false;
@@ -822,13 +826,12 @@ public final class SolrCore implements SolrInfoBean, Closeable {
       // Create the index if it doesn't exist.
       if (!indexExists) {
         log.debug("{}Solr index directory '{}' doesn't exist. Creating new index...", logid, indexDir);
-
-        try (SolrIndexWriter writer = SolrIndexWriter
-            .buildIndexWriter(this, "SolrCore.initIndex", indexDir, getDirectoryFactory(), true, getLatestSchema(), solrConfig.indexConfig, solrDelPolicy,
-                codec, true)) {
-        } catch (Exception e) {
-          ParWork.propagateInterrupt(e);
-          throw new SolrException(ErrorCode.SERVER_ERROR, e);
+        RefCounted<IndexWriter> writer = getSolrCoreState().getIndexWriter(this, true);
+        IndexWriter iw = writer.get();
+        try {
+          iw.commit(); // readers need to see the segments file
+        } finally {
+          writer.decref();
         }
       }
 
@@ -1669,12 +1672,17 @@ public final class SolrCore implements SolrInfoBean, Closeable {
      *
      * @see #isClosed()
      */
-    @Override public void close () {
+    @Override
+    public synchronized void close () {
       int cref = refCount.get();
+      if (cref < 0) {
+        log.warn("Already closed " + cref);
+        return;
+      }
 
       int count = refCount.decrementAndGet();
 
-      if (count < -1) {
+      if (count < 0) {
         refCount.set(-1);
         log.warn("Already closed " + count);
         return;
@@ -1739,7 +1747,7 @@ public final class SolrCore implements SolrInfoBean, Closeable {
 
       int timeouts = 30;
 
-      // MRM TODO: put this timeout in play again
+      // MRM TODO: put this timeout in play again?
       TimeOut timeout = new TimeOut(timeouts, TimeUnit.SECONDS, TimeSource.NANO_TIME);
       int cnt = 0;
       while (!canBeClosed() || refCount.get() != -1) {
@@ -1775,19 +1783,6 @@ public final class SolrCore implements SolrInfoBean, Closeable {
         return;
       }
       try {
-        if (closing) {
-          this.closing = true;
-          while (!isClosed) {
-            synchronized (closeAndWait) {
-              try {
-                closeAndWait.wait(500);
-              } catch (InterruptedException e) {
-
-              }
-            }
-          }
-          return;
-        }
 
         if (log.isDebugEnabled()) log.debug("CLOSING SolrCore {}", logid);
         assert ObjectReleaseTracker.release(this);

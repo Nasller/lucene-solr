@@ -16,14 +16,12 @@
  */
 package org.apache.solr.cloud;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestUtil;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.cloud.DistributedQueue;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.CoreStatus;
@@ -129,7 +127,7 @@ public class DeleteShardTest extends SolrCloudTestCase {
 
   @Test
   // commented 4-Sep-2018  @BadApple(bugUrl="https://issues.apache.org/jira/browse/SOLR-12028") // added 09-Aug-2018
-  public void testDirectoryCleanupAfterDeleteShard() throws InterruptedException, IOException, SolrServerException {
+  public void testDirectoryCleanupAfterDeleteShard() throws Exception {
 
     final String collection = "deleteshard_test";
     CollectionAdminRequest.createCollectionWithImplicitRouter(collection, "conf", "a,b,c", 1)

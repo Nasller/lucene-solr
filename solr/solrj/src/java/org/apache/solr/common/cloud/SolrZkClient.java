@@ -1050,7 +1050,8 @@ public class SolrZkClient implements Closeable {
           }
 
           if ((stat != null && stat.getDataLength() < maxBytesBeforeSuppress && lines < 4) || path.endsWith("state.json") || path
-              .endsWith("security.json") || (path.endsWith("solrconfig.xml") && Boolean.getBoolean("solr.tests.printsolrconfig")) || path.endsWith("_statupdates") || path.contains("/terms/")) {
+              .endsWith("security.json") || (path.endsWith("solrconfig.xml") && Boolean.getBoolean("solr.tests.printsolrconfig")) || path.endsWith("_statupdates")
+              || path.contains("/terms/") || path.endsWith("leader")) {
             //        if (path.endsWith(".xml")) {
             //          // this is the cluster state in xml format - lets pretty print
             //          dataString = prettyPrint(path, dataString);
