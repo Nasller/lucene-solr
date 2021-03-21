@@ -1,6 +1,5 @@
 # .
 /eclipse-build
-/maven-build
 /classes
 build
 /idea-build
@@ -22,7 +21,6 @@ parent.iml
 /prj.el
 /bin
 /bin.*
-pom.xml
 /nbproject
 /nb-build
 .pydevproject
