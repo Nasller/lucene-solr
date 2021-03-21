@@ -24,14 +24,15 @@
   <luceneMatchVersion>${tests.luceneMatchVersion:LATEST}</luceneMatchVersion>
   <indexConfig>
     <useCompoundFile>${useCompoundFile:false}</useCompoundFile>
+	<lockType>single</lockType>
   </indexConfig>
-  <dataDir>${tempDir}/data/${l10n:}-${version:}</dataDir>
+  <dataDir>/data/${l10n:}-${version:}</dataDir>
   <directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.RAMDirectoryFactory}"/>
   <schemaFactory class="ClassicIndexSchemaFactory"/>
 
   <updateHandler class="solr.DirectUpdateHandler2">
     <updateLog>
-      <str name="dir">${solr.data.dir:}</str>
+      <str name="dir">${solr.data.dir:.}</str>
     </updateLog>
   </updateHandler>
 

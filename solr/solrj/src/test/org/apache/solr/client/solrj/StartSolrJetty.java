@@ -30,8 +30,15 @@ public class StartSolrJetty
   public static void main( String[] args ) 
   {
     System.setProperty("jetty.home", "D:/Project/lucene-solr/solr/server");
-    System.setProperty("solr.solr.home", "D:/Project/lucene-solr/solr/server/solr");
+    System.setProperty("solr.solr.home", "D:/Project/lucene-solr/solr/solrj/src/test-files/solrj/solr");
     System.setProperty("solr.log.dir", "D:/Project/lucene-solr/solr/server/logs/solr.log");
+    System.setProperty("coreRootDirectory", "shared");
+    System.setProperty("solr.tests.numeric.dv", "true");
+    System.setProperty("solr.tests.IntegerFieldType", "solr.IntPointField");
+    System.setProperty("solr.tests.FloatFieldType", "solr.FloatPointField");
+    System.setProperty("solr.tests.DoubleFieldType", "solr.DoublePointField");
+    System.setProperty("solr.tests.LongFieldType", "solr.LongPointField");
+    System.setProperty("solr.tests.DateFieldType", "solr.DatePointField");
 
     Server server = new Server();
     ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory());
