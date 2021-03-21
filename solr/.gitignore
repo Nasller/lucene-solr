@@ -24,7 +24,7 @@
 /server/logs/
 /server/solr/zoo_data/
 /server/solr-webapp
-
+/server/solr/**/data/
 *.out
 *.err
 /solrj/src/test-files/solrj/solr/multicore/core1/data/
