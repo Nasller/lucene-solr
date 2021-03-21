@@ -25,3 +25,11 @@ parent.iml
 /nb-build
 .pydevproject
 __pycache__
+/maven-build/solr/**/target/
+/maven-build/solr/solrj/src/java/target/
+/maven-build/solr/solrj/src/test/target/
+/maven-build/solr/core/src/java/target/
+/maven-build/solr/core/src/test/target/
+/maven-build/solr/contrib/**/target/
+/maven-build/lucene/**/**/target/
+/maven-build/lucene/**/target/
