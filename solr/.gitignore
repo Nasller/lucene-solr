@@ -24,7 +24,6 @@
 /server/logs/
 /server/solr/zoo_data/
 /server/solr-webapp
-/server/start.jar
 
 *.out
 *.err
