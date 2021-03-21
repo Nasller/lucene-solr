@@ -29,7 +29,9 @@ public class StartSolrJetty
 {
   public static void main( String[] args ) 
   {
-    System.setProperty("solr.solr.home", "../../../example/solr");
+    System.setProperty("jetty.home", "D:/Project/lucene-solr/solr/server");
+    System.setProperty("solr.solr.home", "D:/Project/lucene-solr/solr/server/solr");
+    System.setProperty("solr.log.dir", "D:/Project/lucene-solr/solr/server/logs/solr.log");
 
     Server server = new Server();
     ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory());
@@ -42,7 +44,7 @@ public class StartSolrJetty
     WebAppContext bb = new WebAppContext();
     bb.setServer(server);
     bb.setContextPath("/solr");
-    bb.setWar("webapp/web");
+    bb.setWar("D:/Project/lucene-solr/solr/webapp/web");
 
 //    // START JMX SERVER
 //    if( true ) {
