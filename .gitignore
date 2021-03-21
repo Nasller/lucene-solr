@@ -33,3 +33,4 @@ __pycache__
 /maven-build/solr/contrib/**/target/
 /maven-build/lucene/**/**/target/
 /maven-build/lucene/**/target/
+/maven-build/target/
