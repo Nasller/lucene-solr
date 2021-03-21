@@ -29,7 +29,7 @@ public class StartSolrJetty
 {
   public static void main( String[] args ) 
   {
-    //System.setProperty("solr.solr.home", "../../../example/solr");
+    System.setProperty("solr.solr.home", "../../../example/solr");
 
     Server server = new Server();
     ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory());
