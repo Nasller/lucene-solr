@@ -1,0 +1,123 @@
+<?xml version="1.0" ?>
+<schema name="example core one" version="1.1">
+
+	<fields>
+		<field name="_version_" type="long" indexed="true" stored="true"/>
+		<field name="id" type="string" indexed="true" stored="true" multiValued="false" required="true" />
+		<field name="name" type="text" indexed="true" stored="true" multiValued="false" />
+		<field name="alias" type="text" indexed="true" stored="true" multiValued="false" />
+		<field name="price" type="double" indexed="true" stored="true" multiValued="false" />
+		<field name="address" type="text" indexed="true" stored="true" multiValued="false" />
+		<field name="priceUpDown" type="double" indexed="true" stored="true" multiValued="false" />
+		<field name="roomCount" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="rentRoomCount" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="longitude" type="double" indexed="true" stored="true" multiValued="false" />
+		<field name="latitude" type="double" indexed="true" stored="true" multiValued="false" />
+		<field name="propertyType" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="fullPinyin" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="simplePinyin" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="indexPictureUrl" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="expertIds" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="expertNames" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="completionDate" type="date" indexed="true" stored="true" multiValued="false" />
+		<field name="subwayStation" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="subwayDistance" type="text" indexed="true" stored="true" multiValued="false" />
+		<field name="areaName" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="areaId" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="parentAreaId" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="parentAreaName" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="subwayLine" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="primarySchool" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="middleSchool" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="propertyCharge" type="double" indexed="true" stored="true" multiValued="false" />
+		<field name="primarySchoolProperty" type="text" indexed="true" stored="true" multiValued="false" />
+		<field name="middleSchoolProperty" type="text" indexed="true" stored="true" multiValued="false" />
+		<field name="gardenRanking" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="primarySchoolName" type="text" indexed="true" stored="true" multiValued="false" />
+		<field name="middleSchoolName" type="text" indexed="true" stored="true" multiValued="false" />
+		<field name="keyword" type="text" indexed="true" stored="false" multiValued="true" />
+		<field name="officeGrade" type="text" indexed="true" stored="true" multiValued="true" />
+		<field name="location" type="location" indexed="true" stored="true"/>
+		<field name="busStationNames" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="metroStationNames" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="metroLineNames" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="schoolNames" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="supermarketNames" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="mallNames" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="city" type="string" indexed="true" stored="true" multiValued="false"/>
+		<field name="hospitalNames" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="businessIds" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="businessNames" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="parentAreaIds" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="parentAreaNames" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="officeRentPrice" type="double" indexed="true" stored="true" multiValued="false"/>
+		<field name="officeSalePrice" type="double" indexed="true" stored="true" multiValued="false"/>
+		<field name="officeBusinessIds" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="officeBusinessNames" type="string" indexed="true" stored="true" multiValued="true"/>
+		<field name="saleOfficeCount" type="int" indexed="true" stored="true" multiValued="false"/>
+		<field name="rentOfficeCount" type="int" indexed="true" stored="true" multiValued="false"/>
+		<field name="stationGardenDestance" type="double" indexed="true" stored="true" multiValued="false"/>
+		<field name="rentCurrentPrice" type="double" indexed="true" stored="true" multiValued="false" />
+		<field name="stationRentDistance" type="string" indexed="true" stored="true" multiValued="false"/>
+		<field name="primarySchoolIds" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="middleSchoolIds" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="officeRentMinPrice" stored="true" indexed="true" type="double" multiValued="false"/>
+		<field name="officeRentMaxPrice" stored="true" indexed="true" type="double" multiValued="false"/>
+		<field name="officeRentMinUnitPrice" stored="true" indexed="true" type="double" multiValued="false"/>
+		<field name="officeRentMaxUnitPrice" stored="true" indexed="true" type="double" multiValued="false"/>
+		<field name="officeSaleMinPrice" stored="true" indexed="true" type="double" multiValued="false"/>
+		<field name="officeSaleMaxPrice" stored="true" indexed="true" type="double" multiValued="false"/>
+		<field name="gardenExpert" type="string" indexed="true" stored="true" multiValued="false" />
+        <field name="plotRatio" stored="true" indexed="true" type="double" multiValued="false"/>
+        <field name="greenRatio" stored="true" indexed="true" type="double" multiValued="false"/>
+		<field name="propertyTypeSubUses" type="string" indexed="true" stored="true" multiValued="true" />
+		<field name="countFamily" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="countBuidling" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="internalID" type="string" indexed="true" stored="true" multiValued="false"/>
+		<field name="bizType" type="string" indexed="true" stored="true" multiValued="false"/>
+		<field name="developer" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="sortField" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="parkingSpace" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="maxPropertyCharge" type="double" indexed="true" stored="true" multiValued="false" />
+		<field name="propertyCompany" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="gardenLightSpot" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="parkingCharge" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="gardenArea" type="double" indexed="true" stored="true" multiValued="false" />
+		<field name="highestFloor" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="underGroundParkingCharge" type="double" indexed="true" stored="true" multiValued="false" />
+		
+		<field name="buildingTotal" type="int" indexed="true" stored="true" multiValued="false" />
+		<field name="parkingSpaceOnGround" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="parkingSpaceUnderGround" type="string" indexed="true" stored="true" multiValued="false" />
+		
+		<field name="status" type="string" indexed="true" stored="true" multiValued="false" />
+		<field name="text" type="text" indexed="false" stored="false" multiValued="true"/>
+		<dynamicField name="*_coordinate"  type="double" indexed="true"  stored="false"/>
+	</fields>
+
+	<!-- field to use to determine and enforce document uniqueness. -->
+	<uniqueKey>id</uniqueKey>
+	<copyField source="name" dest="keyword"/>
+	<copyField source="address" dest="keyword"/>
+	<copyField source="parentAreaName" dest="keyword"/>
+    <copyField source="alias" dest="keyword"/>
+    <copyField source="businessNames" dest="keyword"/>
+    <copyField source="officeBusinessNames" dest="keyword"/>
+    <copyField source="developer" dest="keyword"/>
+	<types>
+		<fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true" />
+		<fieldType name="boolean" class="solr.BoolField" sortMissingLast="true" omitNorms="true" />
+		<fieldtype name="binary" class="solr.BinaryField" />
+		<fieldType name="int" class="solr.TrieIntField" precisionStep="2" omitNorms="true" positionIncrementGap="0" />
+		<fieldType name="float" class="solr.TrieFloatField" precisionStep="2" omitNorms="true" positionIncrementGap="0" />
+		<fieldType name="long" class="solr.TrieLongField" precisionStep="2" omitNorms="true" positionIncrementGap="0" />
+		<fieldType name="double" class="solr.TrieDoubleField" precisionStep="2" omitNorms="true" positionIncrementGap="0" />
+		<fieldType name="date" class="solr.TrieDateField" omitNorms="true" precisionStep="2" positionIncrementGap="0" />
+		<fieldType name="random" class="solr.RandomSortField" indexed="true" />
+		<fieldType name="text" class="solr.TextField">
+			<analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer" />
+		</fieldType>
+		<fieldType name="location" class="solr.LatLonType" subFieldSuffix="_coordinate"/>
+	</types>
+</schema>
+
