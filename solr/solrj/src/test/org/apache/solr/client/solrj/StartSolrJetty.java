@@ -29,15 +29,8 @@ public class StartSolrJetty
 {
   public static void main( String[] args ) 
   {
-//    System.setProperty("solr.solr.home", "F:/StudyProject/lucene-solr/solr/server/solr");
-//    System.setProperty("solr.log.dir", "F:/StudyProject/lucene-solr/solr/server/logs/solr.log");
-//    System.setProperty("coreRootDirectory", "shared");
-//    System.setProperty("solr.tests.numeric.dv", "true");
-//    System.setProperty("solr.tests.IntegerFieldType", "solr.IntPointField");
-//    System.setProperty("solr.tests.FloatFieldType", "solr.FloatPointField");
-//    System.setProperty("solr.tests.DoubleFieldType", "solr.DoublePointField");
-//    System.setProperty("solr.tests.LongFieldType", "solr.LongPointField");
-//    System.setProperty("solr.tests.DateFieldType", "solr.DatePointField");
+  	//-DzkHost=127.0.0.1:2181/nasller
+	//-DzkClientTimeout=15000
 
     Server server = new Server();
     ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory());
