@@ -1,4 +1,4 @@
-package org.apache.solr.search.function.myfunc;
+package org.apache.solr.search.function.myfunc.garden;
 
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.LiteralValueSource;

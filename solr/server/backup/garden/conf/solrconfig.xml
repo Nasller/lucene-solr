@@ -1361,4 +1361,6 @@
 		EditorialMarkerFactory will do exactly that:
 	   <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
 	  -->
+
+	<valueSourceParser name="gardensort" class="org.apache.solr.search.function.myfunc.garden.GardenSortValueSourceParser" />
 </config>

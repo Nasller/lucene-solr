@@ -1,8 +1,9 @@
-package org.apache.solr.search.function.myfunc;
+package org.apache.solr.search.function.myfunc.garden;
 
 import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.MultiFloatFunction;
+import org.apache.solr.search.function.myfunc.SortUtil;
 
 import java.util.Map;
 
