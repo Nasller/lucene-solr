@@ -83,6 +83,9 @@
 
 	<lib dir="${solr.install.dir:../../../..}/contrib/velocity/lib" regex=".*\.jar" />
 	<lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-velocity-\d.*\.jar" />
+
+	<lib dir="${solr.install.dir}/../maven-build/solr/contrib/dataimporthandler/target" regex=".*\.jar" />
+	<lib dir="${solr.install.dir}/../maven-build/solr/contrib/dataimporthandler-extras/target" regex=".*\.jar" />
 	<!-- an exact 'path' can be used instead of a 'dir' to specify a
 		 specific jar file.  This will cause a serious error to be logged
 		 if it can't be loaded.
@@ -996,6 +999,12 @@
 		<arr name="last-components">
 			<str>elevator</str>
 		</arr>
+	</requestHandler>
+
+	<requestHandler name="/dataimport" class="org.apache.solr.handler.dataimport.DataImportHandler">
+		<lst name="defaults">
+			<str name="config">data-config.xml</str>
+		</lst>
 	</requestHandler>
 
 	<!-- Highlighting Component
