@@ -64,7 +64,6 @@
 	<field name="solicitBudgetStart" type="pdouble" multiValued="false" indexed="true" stored="true"/>
 	<field name="solicitBudgetEnd" type="pdouble" multiValued="false" indexed="true" stored="true"/>
 	<field name="features" type="string" multiValued="true" indexed="true" stored="true"/>
-	<field name="rentGender" type="string" multiValued="false" indexed="true" stored="true"/>
 	<field name="tenantExpect" type="string" multiValued="true" indexed="true" stored="true"/>
 	<field name="bedroom" type="pint" multiValued="false" indexed="true" stored="true"/>
 	<field name="livingRoom" type="pint" multiValued="false" indexed="true" stored="true"/>
