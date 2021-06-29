@@ -55,7 +55,7 @@
 	<field name="userAge" type="string" multiValued="false" indexed="true" stored="true"/>
 	<field name="userConstellation" type="string" multiValued="false" indexed="true" stored="true"/>
 
-	<field name="rentId" type="plong" multiValued="false" indexed="true" stored="true"/>
+	<field name="zuFangId" type="plong" multiValued="false" indexed="true" stored="true"/>
 	<field name="city" type="string" multiValued="false" indexed="true" stored="true"/>
 	<field name="rentType" type="string" multiValued="false" indexed="true" stored="true"/>
 	<field name="title" type="text" multiValued="false" indexed="true" stored="true"/>
