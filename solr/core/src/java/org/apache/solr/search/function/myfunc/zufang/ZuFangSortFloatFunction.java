@@ -6,30 +6,35 @@ import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.MultiFloatFunction;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ZuFangSortFloatFunction extends MultiFloatFunction {
-	private final List<String> list;
-	public ZuFangSortFloatFunction(ValueSource[] sources, List<String> list) {
+	public ZuFangSortFloatFunction(ValueSource[] sources) {
 		super(sources);
-		this.list = list;
 	}
 
 	@Override
 	protected float func(int doc, FunctionValues[] vals) {
 		try {
-			if(CollectionUtils.isNotEmpty(list)){
-				List<String> local = new ArrayList<>(list);
-				String allKeyword = local.remove(0);
-				String keyword = Stream.of(vals[0].strVal(doc),vals[1].strVal(doc),vals[2].strVal(doc),vals[3].strVal(doc))
-						.filter(StringUtils::isNotBlank).collect(Collectors.joining());
+			String keyword = Stream.of(vals[0].strVal(doc),vals[1].strVal(doc),vals[2].strVal(doc),vals[3].strVal(doc))
+					.filter(StringUtils::isNotBlank).collect(Collectors.joining());
+			List<String> keywords = Stream.of(vals).skip(4).map(o-> {
+				try {
+					return o.strVal(doc);
+				} catch (IOException e) {
+					e.printStackTrace();
+					return null;
+				}
+			}).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+			if(CollectionUtils.isNotEmpty(keywords)){
+				String allKeyword = keywords.remove(0);
 				if(keyword.contains(allKeyword)){
 					return 100;
 				}
-				for (String text : local) {
+				for (String text : keywords) {
 					if(keyword.contains(text)){
 						return 50;
 					}

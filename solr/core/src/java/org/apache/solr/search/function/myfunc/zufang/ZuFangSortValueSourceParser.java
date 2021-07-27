@@ -19,15 +19,7 @@ public class ZuFangSortValueSourceParser extends ValueSourceParser {
 		list.add(getValueSource(fp, "address"));
 		list.add(getValueSource(fp, "sortField"));
 		list.addAll(fp.parseValueSourceList());
-		List<String> keywords = new ArrayList<>();
-		try {
-			while (fp.hasMoreArguments()){
-				keywords.add(fp.parseArg());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return new ZuFangSortFloatFunction(list.toArray(new ValueSource[0]),keywords);
+		return new ZuFangSortFloatFunction(list.toArray(new ValueSource[0]));
 	}
 
 	public ValueSource getValueSource(FunctionQParser fp, String arg) {
