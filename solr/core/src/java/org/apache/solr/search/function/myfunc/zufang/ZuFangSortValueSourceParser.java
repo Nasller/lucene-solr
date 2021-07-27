@@ -13,19 +13,21 @@ public class ZuFangSortValueSourceParser extends ValueSourceParser {
 
 	@Override
 	public ValueSource parse(FunctionQParser fp) throws SyntaxError {
-		ValueSource title = getValueSource(fp, "title");
-		ValueSource desc = getValueSource(fp, "desc");
-		ValueSource address = getValueSource(fp, "address");
-		ValueSource sortField = getValueSource(fp, "sortField");
-		List<String> list = new ArrayList<>();
+		List<ValueSource> list = new ArrayList<>();
+		list.add(getValueSource(fp, "title"));
+		list.add(getValueSource(fp, "desc"));
+		list.add(getValueSource(fp, "address"));
+		list.add(getValueSource(fp, "sortField"));
+		list.addAll(fp.parseValueSourceList());
+		List<String> keywords = new ArrayList<>();
 		try {
 			while (fp.hasMoreArguments()){
-				list.add(fp.parseArg());
+				keywords.add(fp.parseArg());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new ZuFangSortFloatFunction(new ValueSource[]{title,desc,address,sortField},list);
+		return new ZuFangSortFloatFunction(list.toArray(new ValueSource[0]),keywords);
 	}
 
 	public ValueSource getValueSource(FunctionQParser fp, String arg) {
