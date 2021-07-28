@@ -31,6 +31,9 @@
       <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
       <filter class="solr.LowerCaseFilterFactory"/>
     </analyzer>
+	<similarity class="org.apache.solr.search.similarities.mySimilarity.BootSimilarityFactory">
+	  <!--<str name="paramkey">param value</str>-->
+    </similarity>
   </fieldType>
   <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100" multiValued="true">
     <analyzer type="index">
