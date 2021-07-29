@@ -38,7 +38,7 @@ public class BootSimilarity extends Similarity {
 	}
 
 	static class BoostSimScorer extends SimScorer {
-		private final BoostSimWeight boostSimWeight ;
+		private final BoostSimWeight boostSimWeight;
 
 		public BoostSimScorer(BoostSimWeight boostSimWeight){
 			this.boostSimWeight = boostSimWeight;
