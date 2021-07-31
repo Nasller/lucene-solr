@@ -11,6 +11,10 @@ import org.apache.lucene.util.BytesRef;
 
 import java.util.Collections;
 
+/**
+ * like this
+ * @see org.apache.lucene.search.similarities.BooleanSimilarity
+ */
 public class BootSimilarity extends Similarity {
 
 	@Override

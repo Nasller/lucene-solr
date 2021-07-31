@@ -11,9 +11,6 @@ import org.apache.solr.common.util.NamedList;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Lanxiaowei
- */
 public class IndexPrefixBoostQParser {
 	private static final String SOLRPEDIA_INSTANT_CORE = "http://localhost:8983/solr/prefixboost";
 
