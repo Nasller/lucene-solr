@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Solr managed schema - automatically generated - DO NOT EDIT -->
+<schema name="default-config" version="1.6">
+  <types>
+      <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
+      <fieldType name="long" class="solr.LongPointField"/>
+      <fieldType name="tlong" class="solr.LongPointField"/>
+      <fieldType name="int" class="solr.IntPointField"/>
+      <fieldType name="tint" class="solr.IntPointField"/>
+      <fieldType name="float" class="solr.FloatPointField"/>
+      <fieldType name="tfloat" class="solr.FloatPointField"/>
+      <fieldType name="date" class="solr.DatePointField" omitNorms="true" />
+      <fieldType name="tdate" class="solr.DatePointField"/>
+
+      <fieldType name="text_lowercase" class="solr.TextField" 
+          positionIncrementGap="100">
+      <analyzer>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory" />
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_lower_exact" class="solr.TextField" 
+        positionIncrementGap="100" sortMissingLast="true" omitNorms="true">
+      <analyzer>
+          <charFilter class="solr.PatternReplaceCharFilterFactory"
+                    pattern="^(.*)$" replacement="ǣ $1 Ǣ" />
+          <tokenizer class="solr.StandardTokenizerFactory"/>
+          <filter class="solr.LowerCaseFilterFactory" />
+          <filter class="solr.PatternReplaceFilterFactory"
+                    pattern="([^a-z0-9æøåüäöóéúǣǢ ])" 
+                    replacement="" replace="all" />
+      </analyzer>
+    </fieldType>
+  </types>
+
+  <fields>
+      <field name="id" type="string" indexed="true" stored="true" required="true"/>
+      <field name="name" type="text_lowercase" indexed="true" stored="true" 
+          omitNorms="true" />
+      <field name="exactname" type="text_lower_exact" indexed="true" stored="false"
+          omitNorms="true" />
+      <field name="_version_" type="long" indexed="true" stored="true" />
+      <copyField source="name" dest="exactname"/>
+  </fields>
+  <uniqueKey>id</uniqueKey>
+</schema>
