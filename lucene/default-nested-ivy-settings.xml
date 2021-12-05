@@ -16,39 +16,35 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<ivysettings>
-  <!-- This file is included by default by top-level-ivy-settings.xml,
-       which loads ivy-versions.properties as Ivy variables.          -->
+<ivy-settings>
+  <!-- path to local maven repo and default maven layout -->
+  <property name="local-maven2-pattern"
+            value="C:/maven-3.6.0/repository/[organisation]/[module]/[revision]/[module]-[revision]"
+            override="false" />
 
-  <settings defaultResolver="default"/>
+  <!-- set resolver chain as default -->
+  <settings defaultResolver="main" />
 
-  <property name="local-maven2-dir" value="${user.home}/.m2/repository/" />
-
-  <include url="${ivy.default.settings.dir}/ivysettings-public.xml"/>
-  <include url="${ivy.default.settings.dir}/ivysettings-shared.xml"/>
-  <include url="${ivy.default.settings.dir}/ivysettings-local.xml"/>
-  <include url="${ivy.default.settings.dir}/ivysettings-main-chain.xml"/>
-
-  <caches lockStrategy="${ivy.lock-strategy}" resolutionCacheDir="${ivy.resolution-cache.dir}" />
+  <!-- configure caches -->
+  <caches repositoryCacheDir="${user.home}/.ivy2/cache">
+    <!-- do not cache from local .m2-->
+    <cache name="nocache" useOrigin="true" />
+    <cache name="default" />
+  </caches>
 
   <resolvers>
-    <ibiblio name="sonatype-releases" root="https://oss.sonatype.org/content/repositories/releases" m2compatible="true" />
-    <ibiblio name="releases.cloudera.com" root="https://repository.cloudera.com/artifactory/libs-release-local" m2compatible="true" />
-
-    <filesystem name="local-maven-2" m2compatible="true" local="true">
-      <artifact
-          pattern="${local-maven2-dir}/[organisation]/[module]/[revision]/[module]-[revision].[ext]" />
-      <ivy
-          pattern="${local-maven2-dir}/[organisation]/[module]/[revision]/[module]-[revision].pom" />
-    </filesystem>
-
-    <chain name="default" returnFirst="true" checkmodified="true" changingPattern=".*SNAPSHOT">
-      <resolver ref="local"/>
-      <!-- <resolver ref="local-maven-2" /> -->
-      <resolver ref="main"/>
-      <resolver ref="sonatype-releases" />
-      <resolver ref="releases.cloudera.com"/>
+    <chain name="main">
+      <!-- as this is not cached, even changing SNAPSHOT dependencies
+	  are resolved correctly -->
+      <filesystem name="local-maven-2" m2compatible="true" local="true"
+                  cache="nocache">
+        <ivy pattern="${local-maven2-pattern}.pom" />
+        <artifact pattern="${local-maven2-pattern}(-[classifier]).[ext]" />
+      </filesystem>
+      <!-- use repository manager as proxy to maven-central
+	  (and all other repositories)-->
+      <ibiblio name="aliyun" m2compatible="true"
+               root="https://maven.aliyun.com/repository/public" cache="default"/>
     </chain>
   </resolvers>
-
-</ivysettings>
+</ivy-settings>
