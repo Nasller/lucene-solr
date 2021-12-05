@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -90,8 +89,10 @@ import org.apache.solr.core.backup.repository.BackupRepository;
 import org.apache.solr.core.backup.repository.BackupRepositoryFactory;
 import org.apache.solr.filestore.PackageStoreAPI;
 import org.apache.solr.handler.ClusterAPI;
+import org.apache.solr.handler.CollectionBackupsAPI;
 import org.apache.solr.handler.CollectionsAPI;
 import org.apache.solr.handler.RequestHandlerBase;
+import org.apache.solr.handler.designer.SchemaDesignerAPI;
 import org.apache.solr.handler.SnapShooter;
 import org.apache.solr.handler.admin.AutoscalingHistoryHandler;
 import org.apache.solr.handler.admin.CollectionsHandler;
@@ -316,9 +317,8 @@ public class CoreContainer {
   }
 
   /**
-   * Create a new CoreContainer using the given SolrResourceLoader,
-   * configuration and CoresLocator.  The container's cores are
-   * not loaded.
+   * Create a new CoreContainer using the given configuration.
+   * The container's cores are not loaded.
    *
    * @param config a ConfigSolr representation of this container's configuration
    * @see #load()
@@ -331,6 +331,14 @@ public class CoreContainer {
     this(config, new CorePropertiesLocator(config.getCoreRootDirectory()), asyncSolrCoreLoad);
   }
 
+  /**
+   * Create a new CoreContainer using the given configuration and locator.
+   * The container's cores are not loaded.
+   *
+   * @param config a ConfigSolr representation of this container's configuration
+   * @param locator a CoresLocator
+   * @see #load()
+   */
   public CoreContainer(NodeConfig config, CoresLocator locator) {
     this(config, locator, false);
   }
@@ -391,7 +399,11 @@ public class CoreContainer {
       }
       log.info("Initializing authorization plugin: {}", klas);
       authorizationPlugin = new SecurityPluginHolder<>(newVersion,
-          getResourceLoader().newInstance(klas, AuthorizationPlugin.class));
+          getResourceLoader().newInstance(klas,
+              AuthorizationPlugin.class,
+              null,
+              new Class<?>[]{CoreContainer.class},
+              new Object[]{this}));
 
       // Read and pass the authorization context to the plugin
       authorizationPlugin.plugin.init(authorizationConf);
@@ -727,12 +739,20 @@ public class CoreContainer {
     createHandler(ZK_PATH, ZookeeperInfoHandler.class.getName(), ZookeeperInfoHandler.class);
     createHandler(ZK_STATUS_PATH, ZookeeperStatusHandler.class.getName(), ZookeeperStatusHandler.class);
     collectionsHandler = createHandler(COLLECTIONS_HANDLER_PATH, cfg.getCollectionsHandlerClass(), CollectionsHandler.class);
-    containerHandlers.getApiBag().registerObject(new CollectionsAPI(collectionsHandler));
+    final CollectionsAPI collectionsAPI = new CollectionsAPI(collectionsHandler);
+    containerHandlers.getApiBag().registerObject(collectionsAPI);
+    final CollectionBackupsAPI collectionBackupsAPI = new CollectionBackupsAPI(collectionsHandler);
+    containerHandlers.getApiBag().registerObject(collectionBackupsAPI);
     configSetsHandler = createHandler(CONFIGSETS_HANDLER_PATH, cfg.getConfigSetsHandlerClass(), ConfigSetsHandler.class);
     ClusterAPI clusterAPI = new ClusterAPI(collectionsHandler, configSetsHandler);
     containerHandlers.getApiBag().registerObject(clusterAPI);
     containerHandlers.getApiBag().registerObject(clusterAPI.commands);
     containerHandlers.getApiBag().registerObject(clusterAPI.configSetCommands);
+
+    if (isZooKeeperAware()) {
+      containerHandlers.getApiBag().registerObject(new SchemaDesignerAPI(this));
+    } // else Schema Designer not available in standalone (non-cloud) mode
+
     /*
      * HealthCheckHandler needs to be initialized before InfoHandler, since the later one will call CoreContainer.getHealthCheckHandler().
      * We don't register the handler here because it'll be registered inside InfoHandler
@@ -941,12 +961,7 @@ public class CoreContainer {
         name = "localhost";
       }
       cloudManager = null;
-      client = new EmbeddedSolrServer(this, null) {
-        @Override
-        public void close() throws IOException {
-          // do nothing - we close the container ourselves
-        }
-      };
+      client = new EmbeddedSolrServer(this, null);
       // enable local metrics unless specifically set otherwise
       initArgs.putIfAbsent(MetricsHistoryHandler.ENABLE_NODES_PROP, true);
       initArgs.putIfAbsent(MetricsHistoryHandler.ENABLE_REPLICAS_PROP, true);
@@ -1024,26 +1039,9 @@ public class CoreContainer {
       if (isZooKeeperAware()) {
         cancelCoreRecoveries();
         zkSys.zkController.preClose();
-        /*
-         * Pause updates for all cores on this node and wait for all in-flight update requests to finish.
-         * Here, we (slightly) delay leader election so that in-flight update requests succeed and we can preserve consistency.
-         *
-         * Jetty already allows a grace period for in-flight requests to complete and our solr cores, searchers etc
-         * are reference counted to allow for graceful shutdown. So we don't worry about any other kind of requests.
-         *
-         * We do not need to unpause ever because the node is being shut down.
-         */
-        getCores().parallelStream().forEach(solrCore -> {
-          SolrCoreState solrCoreState = solrCore.getSolrCoreState();
-          try {
-            solrCoreState.pauseUpdatesAndAwaitInflightRequests();
-          } catch (TimeoutException e) {
-            log.warn("Timed out waiting for in-flight update requests to complete for core: {}", solrCore.getName());
-          } catch (InterruptedException e) {
-            log.warn("Interrupted while waiting for in-flight update requests to complete for core: {}", solrCore.getName());
-            Thread.currentThread().interrupt();
-          }
-        });
+      }
+      pauseUpdatesAndAwaitInflightRequests();
+      if (isZooKeeperAware()) {
         zkSys.zkController.tryCancelAllElections();
       }
 
@@ -1133,9 +1131,7 @@ public class CoreContainer {
       } finally {
         try {
           if (updateShardHandler != null) {
-            customThreadPool.submit(() -> Collections.singleton(shardHandlerFactory).parallelStream().forEach(c -> {
-              updateShardHandler.close();
-            }));
+            customThreadPool.submit(updateShardHandler::close);
           }
         } finally {
           try {
@@ -1197,6 +1193,29 @@ public class CoreContainer {
         SolrException.log(log, "Error canceling recovery for core", e);
       }
     }
+  }
+
+  /**
+   * Pause updates for all cores on this node and wait for all in-flight update requests to finish.
+   * Here, we (slightly) delay leader election so that in-flight update requests succeed and we can preserve consistency.
+   *
+   * Jetty already allows a grace period for in-flight requests to complete and our solr cores, searchers etc
+   * are reference counted to allow for graceful shutdown. So we don't worry about any other kind of requests.
+   *
+   * We do not need to unpause ever because the node is being shut down.
+   */
+  private void pauseUpdatesAndAwaitInflightRequests() {
+    getCores().parallelStream().forEach(solrCore -> {
+      SolrCoreState solrCoreState = solrCore.getSolrCoreState();
+      try {
+        solrCoreState.pauseUpdatesAndAwaitInflightRequests();
+      } catch (TimeoutException e) {
+        log.warn("Timed out waiting for in-flight update requests to complete for core: {}", solrCore.getName());
+      } catch (InterruptedException e) {
+        log.warn("Interrupted while waiting for in-flight update requests to complete for core: {}", solrCore.getName());
+        Thread.currentThread().interrupt();
+      }
+    });
   }
 
   @Override
@@ -1261,7 +1280,7 @@ public class CoreContainer {
     return create(coreName, cfg.getCoreRootDirectory().resolve(coreName), parameters, false);
   }
 
-  Set<String> inFlightCreations = new HashSet<>(); // See SOLR-14969
+  final Set<String> inFlightCreations = ConcurrentHashMap.newKeySet(); // See SOLR-14969
   /**
    * Creates a new core in a specified instance directory, publishing the core state to the cluster
    *
@@ -1271,17 +1290,13 @@ public class CoreContainer {
    * @return the newly created core
    */
   public SolrCore create(String coreName, Path instancePath, Map<String, String> parameters, boolean newCollection) {
-    SolrCore core = null;
     boolean iAdded = false;
     try {
-      synchronized (inFlightCreations) {
-        if (inFlightCreations.add(coreName)) {
-          iAdded = true;
-        } else {
-          String msg = "Already creating a core with name '" + coreName + "', call aborted '";
-          log.warn(msg);
-          throw new SolrException(ErrorCode.CONFLICT, msg);
-        }
+      iAdded = inFlightCreations.add(coreName);
+      if (! iAdded) {
+        String msg = "Already creating a core with name '" + coreName + "', call aborted '";
+        log.warn(msg);
+        throw new SolrException(ErrorCode.CONFLICT, msg);
       }
       CoreDescriptor cd = new CoreDescriptor(coreName, instancePath, parameters, getContainerProperties(), getZkController());
 
@@ -1312,6 +1327,7 @@ public class CoreContainer {
         // first and clean it up if there's an error.
         coresLocator.create(this, cd);
 
+        SolrCore core;
         try {
           solrCores.waitAddPendingCoreOps(cd.getName());
           core = createFromDescriptor(cd, true, newCollection);
@@ -1356,10 +1372,8 @@ public class CoreContainer {
             "Error CREATEing SolrCore '" + coreName + "': " + ex.getMessage() + rootMsg, ex);
       }
     } finally {
-      synchronized (inFlightCreations) {
-        if (iAdded) {
-          inFlightCreations.remove(coreName);
-        }
+      if (iAdded) {
+        inFlightCreations.remove(coreName);
       }
     }
   }
@@ -2284,13 +2298,13 @@ class CloserThread extends Thread {
           // any cores to close.
         }
       }
-      for (SolrCore removeMe = solrCores.getCoreToClose();
-           removeMe != null && !container.isShutDown();
-           removeMe = solrCores.getCoreToClose()) {
+
+      SolrCore core;
+      while (!container.isShutDown() && (core = solrCores.getCoreToClose()) != null) {
         try {
-          removeMe.close();
+          core.close();
         } finally {
-          solrCores.removeFromPendingOps(removeMe.getName());
+          solrCores.removeFromPendingOps(core.getName());
         }
       }
     }

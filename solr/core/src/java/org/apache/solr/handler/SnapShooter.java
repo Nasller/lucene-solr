@@ -95,7 +95,7 @@ public class SnapShooter {
       SimpleDateFormat fmt = new SimpleDateFormat(DATE_FMT, Locale.ROOT);
       directoryName = "snapshot." + fmt.format(new Date());
     }
-    this.snapshotDirPath = backupRepo.resolve(location, directoryName);
+    this.snapshotDirPath = backupRepo.resolveDirectory(location, directoryName);
     this.commitName = commitName;
   }
 
@@ -120,7 +120,7 @@ public class SnapShooter {
       paths = backupRepo.listAll(baseSnapDirPath);
       for (String path : paths) {
         if (path.equals(this.directoryName)
-            && backupRepo.getPathType(baseSnapDirPath.resolve(path)) == PathType.DIRECTORY) {
+            && backupRepo.getPathType(backupRepo.resolveDirectory(baseSnapDirPath, path)) == PathType.DIRECTORY) {
           dirFound = true;
           break;
         }
@@ -180,25 +180,7 @@ public class SnapShooter {
   private IndexCommit getAndSaveIndexCommit() throws IOException {
     final IndexDeletionPolicyWrapper delPolicy = solrCore.getDeletionPolicy();
     if (null != commitName) {
-      final SolrSnapshotMetaDataManager snapshotMgr = solrCore.getSnapshotMetaDataManager();
-      // We're going to tell the delPolicy to "save" this commit -- even though it's a named snapshot
-      // that will already be protected -- just in case another thread deletes the name.
-      // Because of this, we want to sync on the delPolicy to ensure there is no window of time after
-      // snapshotMgr confirms commitName exists, but before we have a chance to 'save' it, when
-      // the commitName might be deleted *and* the IndexWriter might call onCommit()
-      synchronized (delPolicy) { 
-        final Optional<IndexCommit> namedCommit = snapshotMgr.getIndexCommitByName(commitName);
-        if (namedCommit.isPresent()) {
-          final IndexCommit commit = namedCommit.get();
-          if (log.isDebugEnabled()) {
-            log.debug("Using named commit: name={}, generation={}", commitName, commit.getGeneration());
-          }
-          delPolicy.saveCommitPoint(commit.getGeneration());
-          return commit;
-        }
-      } // else...
-      throw new SolrException(ErrorCode.BAD_REQUEST, "Unable to find an index commit with name " +
-                                commitName + " for core " + solrCore.getName());
+      return getAndSaveNamedIndexCommit(solrCore, commitName);
     }
     // else: not a named commit...
     final IndexCommit commit = delPolicy.getAndSaveLatestCommit();
@@ -210,6 +192,29 @@ public class SnapShooter {
       log.debug("Using latest commit: generation={}", commit.getGeneration());
     }
     return commit;
+  }
+
+  public static IndexCommit getAndSaveNamedIndexCommit(SolrCore solrCore, String commitName) throws IOException {
+    final IndexDeletionPolicyWrapper delPolicy = solrCore.getDeletionPolicy();
+    final SolrSnapshotMetaDataManager snapshotMgr = solrCore.getSnapshotMetaDataManager();
+    // We're going to tell the delPolicy to "save" this commit -- even though it's a named snapshot
+    // that will already be protected -- just in case another thread deletes the name.
+    // Because of this, we want to sync on the delPolicy to ensure there is no window of time after
+    // snapshotMgr confirms commitName exists, but before we have a chance to 'save' it, when
+    // the commitName might be deleted *and* the IndexWriter might call onCommit()
+    synchronized (delPolicy) {
+      final Optional<IndexCommit> namedCommit = snapshotMgr.getIndexCommitByName(commitName);
+      if (namedCommit.isPresent()) {
+        final IndexCommit commit = namedCommit.get();
+        if (log.isDebugEnabled()) {
+          log.debug("Using named commit: name={}, generation={}", commitName, commit.getGeneration());
+        }
+        delPolicy.saveCommitPoint(commit.getGeneration());
+        return commit;
+      }
+    } // else...
+    throw new SolrException(ErrorCode.BAD_REQUEST, "Unable to find an index commit with name " +
+            commitName + " for core " + solrCore.getName());
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})

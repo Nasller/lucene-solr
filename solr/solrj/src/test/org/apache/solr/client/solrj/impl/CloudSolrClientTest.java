@@ -75,6 +75,8 @@ import org.apache.solr.handler.admin.CollectionsHandler;
 import org.apache.solr.handler.admin.ConfigSetsHandler;
 import org.apache.solr.handler.admin.CoreAdminHandler;
 import org.apache.solr.util.LogLevel;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -791,6 +793,18 @@ public class CloudSolrClientTest extends SolrCloudTestCase {
   }
 
   @Test
+  public void forwardCompatZkChrootTest() throws IOException, InterruptedException, KeeperException {
+    String newPath = "/forward/compat";
+    // Make sure that the ZKStateReader can connect when only a collections ZNode exists, not the clusterstate.json
+    cluster.getZkServer().getZkClient().makePath(newPath + ZkStateReader.COLLECTIONS_ZKNODE, new byte[0], CreateMode.PERSISTENT, true);
+    cluster.getZkServer().getZkClient().makePath(newPath + ZkStateReader.ALIASES, new byte[0], CreateMode.PERSISTENT, true);
+    try (CloudSolrClient client = getCloudSolrClient(cluster.getZkServer().getZkAddress() + newPath)) {
+      client.setZkClientTimeout(1000 * 60);
+      client.connect();
+    }
+  }
+
+  @Test
   public void customHttpClientTest() throws IOException {
     CloseableHttpClient client = HttpClientUtil.createClient(null);
     try (CloudSolrClient solrClient = getCloudSolrClient(cluster.getZkServer().getZkAddress(), client)) {
@@ -1106,6 +1120,11 @@ public class CloudSolrClientTest extends SolrCloudTestCase {
         .process(cluster.getSolrClient());
     prs = PerReplicaStates.fetch(ZkStateReader.getCollectionPath(testCollection), cluster.getZkClient(), null);
     assertEquals(5, prs.states.size());
+
+    c = cluster.getSolrClient().getZkStateReader().getCollection(testCollection);
+    Replica toDelete = c.getReplica((shard, replica) -> "shard1".equals(shard) && !replica.isLeader());
+    CollectionAdminRequest.deleteReplica(testCollection, "shard1", toDelete.getName()).process(cluster.getSolrClient());
+    cluster.waitForActiveCollection(testCollection, 2, 4);
 
     testCollection = "perReplicaState_testv2";
     new V2Request.Builder("/collections")

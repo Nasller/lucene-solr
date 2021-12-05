@@ -179,7 +179,7 @@ Collation allows sorting of text in a language-sensitive way. It is usually used
 
 == Daitch-Mokotoff Soundex Filter
 
-Implements the Daitch-Mokotoff Soundex algorithm, which allows identification of similar names, even if they are spelled differently. More information about how this works is available in the section on <<phonetic-matching.adoc#phonetic-matching,Phonetic Matching>>.
+Implements the Daitch-Mokotoff Soundex algorithm, which allows identification of similar names, even if they are spelled differently. More information about how this works is available in the section on <<phonetic-matching.adoc#,Phonetic Matching>>.
 
 *Factory class:* `solr.DaitchMokotoffSoundexFilterFactory`
 
@@ -199,7 +199,7 @@ Implements the Daitch-Mokotoff Soundex algorithm, which allows identification of
 
 == Double Metaphone Filter
 
-This filter creates tokens using the http://commons.apache.org/proper/commons-codec/archives/{ivy-commons-codec-version}/apidocs/org/apache/commons/codec/language/DoubleMetaphone.html[`DoubleMetaphone`] encoding algorithm from commons-codec. For more information, see the <<phonetic-matching.adoc#phonetic-matching,Phonetic Matching>> section.
+This filter creates tokens using the http://commons.apache.org/proper/commons-codec/archives/{ivy-commons-codec-version}/apidocs/org/apache/commons/codec/language/DoubleMetaphone.html[`DoubleMetaphone`] encoding algorithm from commons-codec. For more information, see the <<phonetic-matching.adoc#,Phonetic Matching>> section.
 
 *Factory class:* `solr.DoubleMetaphoneFilterFactory`
 
@@ -899,7 +899,7 @@ Converts any uppercase letters in a token to the equivalent lowercase token. All
 
 == Managed Stop Filter
 
-This is specialized version of the <<Stop Filter,Stop Words Filter Factory>> that uses a set of stop words that are <<managed-resources.adoc#managed-resources,managed from a REST API.>>
+This is specialized version of the <<Stop Filter,Stop Words Filter Factory>> that uses a set of stop words that are <<managed-resources.adoc#,managed from a REST API.>>
 
 *Arguments:*
 
@@ -921,7 +921,7 @@ See <<Stop Filter>> for example input/output.
 
 == Managed Synonym Filter
 
-This is specialized version of the <<Synonym Filter>> that uses a mapping on synonyms that is <<managed-resources.adoc#managed-resources,managed from a REST API.>>
+This is specialized version of the <<Synonym Filter>> that uses a mapping on synonyms that is <<managed-resources.adoc#,managed from a REST API.>>
 
 .Managed Synonym Filter has been Deprecated
 [WARNING]
@@ -935,7 +935,7 @@ For arguments and examples, see the <<Synonym Graph Filter>> below.
 
 == Managed Synonym Graph Filter
 
-This is specialized version of the <<Synonym Graph Filter>> that uses a mapping on synonyms that is <<managed-resources.adoc#managed-resources,managed from a REST API.>>
+This is specialized version of the <<Synonym Graph Filter>> that uses a mapping on synonyms that is <<managed-resources.adoc#,managed from a REST API.>>
 
 This filter maps single- or multi-token synonyms, producing a fully correct graph output. This filter is a replacement for the Managed Synonym Filter, which produces incorrect graphs for multi-token synonyms.
 
@@ -963,6 +963,58 @@ With this configuration the set of mappings is named "english" and can be manage
 ----
 
 See <<Synonym Graph Filter>> below for example input/output.
+
+== MinHash Filter
+
+Generates a repeatably random fixed number of hash tokens from all the input tokens in the stream.
+To do this it first consumes all of the input tokens from its source.
+This filter would normally be preceded by a <<Shingle Filter>>, as shown in the example below.
+
+Each input token is hashed.
+It is subsequently "rehashed" `hashCount` times by combining with a set of precomputed hashes.
+For each of the resulting hashes, the hash space is divided in to `bucketCount` buckets.
+The lowest set of `hashSetSize` hashes (usually a set of one) is generated for each bucket.
+
+This filter generates one type of signature or sketch for the input tokens and can be used to compute Jaccard similarity between documents.
+
+*Arguments:*
+
+`hashCount`::
+The number of hashes to use.
+The default is `1`.
+
+`bucketCount`::
+The number of buckets to use.
+The default is `512`.
+
+`hashSetSize`::
+The size of the set for the lowest hashes from each bucket.
+The default is `1`.
+
+`withRotation`::
+If a hash bucket is empty, generate a hash value from the first previous bucket that has a value.
+The default is `true` if the `bucketCount` is greater than `1` and `false` otherwise.
+
+The number of hashes generated depends on the options above.
+With the default settings for `withRotation`, the number of hashes generated is `hashCount` x `bucketCount` x `hashSetSize` \=> 512, by default.
+
+*Example:*
+
+[source,xml]
+----
+<analyzer>
+  <tokenizer class="solr.ICUTokenizerFactory"/>
+  <filter class="solr.ICUFoldingFilterFactory"/>
+  <filter class="solr.ShingleFilterFactory" minShingleSize="5" outputUnigrams="false" outputUnigramsIfNoShingles="false" maxShingleSize="5" tokenSeparator=" "/>
+  <filter class="org.apache.lucene.analysis.minhash.MinHashFilterFactory" bucketCount="512" hashSetSize="1" hashCount="1"/>
+</analyzer>
+----
+
+*In:* "woof woof woof woof woof"
+
+*Tokenizer to Filter:* "woof woof woof woof woof"
+
+*Out:* "℁팽徭聙↝ꇁ홱杯", "℁팽徭聙↝ꇁ홱杯", "℁팽徭聙↝ꇁ홱杯",     .... a total of 512 times
 
 == N-Gram Filter
 
@@ -1148,7 +1200,7 @@ More complex pattern with capture group reference in the replacement. Tokens tha
 
 == Phonetic Filter
 
-This filter creates tokens using one of the phonetic encoding algorithms in the `org.apache.commons.codec.language` package. For more information, see the section on <<phonetic-matching.adoc#phonetic-matching,Phonetic Matching>>.
+This filter creates tokens using one of the phonetic encoding algorithms in the `org.apache.commons.codec.language` package. For more information, see the section on <<phonetic-matching.adoc#,Phonetic Matching>>.
 
 *Factory class:* `solr.PhoneticFilterFactory`
 
@@ -1383,6 +1435,8 @@ This filter constructs shingles, which are token n-grams, from the token stream.
 
 `tokenSeparator`:: (string, default is " ") The string to use when joining adjacent tokens to form a shingle.
 
+`fillerToken`:: (string, default is "_") The character used to fill in for removed stop words in order to preserve position increments.
+
 *Example:*
 
 Default behavior.
@@ -1605,7 +1659,7 @@ NOTE: Although this filter produces correct token graphs, it cannot consume an i
 
 *Arguments:*
 
-`synonyms`:: (required) The path of a file that contains a list of synonyms, one per line. In the (default) `solr` format - see the `format` argument below for alternatives - blank lines and lines that begin with "`#`" are ignored. This may be a comma-separated list of paths.  See <<resource-loading.adoc#resource-loading,Resource Loading>> for more information.
+`synonyms`:: (required) The path of a file that contains a list of synonyms, one per line. In the (default) `solr` format - see the `format` argument below for alternatives - blank lines and lines that begin with "`#`" are ignored. This may be a comma-separated list of paths.  See <<resource-loading.adoc#,Resource Loading>> for more information.
 +
 There are two ways to specify synonym mappings:
 +

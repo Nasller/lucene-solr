@@ -16,26 +16,27 @@
  */
 package org.apache.lucene.search;
 
+import static org.apache.lucene.search.CombinedFieldQuery.FieldAndWeight;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.search.similarities.Similarity.SimScorer;
 import org.apache.lucene.util.SmallFloat;
 
-import static org.apache.lucene.search.BM25FQuery.FieldAndWeight;
-
 /**
  * Copy of {@link LeafSimScorer} that sums document's norms from multiple fields.
+ *
+ * <p>For all fields, norms must be encoded using {@link SmallFloat#intToByte4}. This scorer also
+ * requires that either all fields or no fields have norms enabled. Having only some fields with
+ * norms enabled can result in errors or undefined behavior.
  */
 final class MultiNormsLeafSimScorer {
-  /**
-   * Cache of decoded norms.
-   */
+  /** Cache of decoded norms. */
   private static final float[] LENGTH_TABLE = new float[256];
 
   static {
@@ -47,11 +48,13 @@ final class MultiNormsLeafSimScorer {
   private final SimScorer scorer;
   private final NumericDocValues norms;
 
-  /**
-   * Sole constructor: Score documents of {@code reader} with {@code scorer}.
-   *
-   */
-  MultiNormsLeafSimScorer(SimScorer scorer, LeafReader reader, Collection<FieldAndWeight> normFields, boolean needsScores) throws IOException {
+  /** Sole constructor: Score documents of {@code reader} with {@code scorer}. */
+  MultiNormsLeafSimScorer(
+      SimScorer scorer,
+      LeafReader reader,
+      Collection<FieldAndWeight> normFields,
+      boolean needsScores)
+      throws IOException {
     this.scorer = Objects.requireNonNull(scorer);
     if (needsScores) {
       final List<NumericDocValues> normsList = new ArrayList<>();
@@ -63,10 +66,9 @@ final class MultiNormsLeafSimScorer {
           weightList.add(field.weight);
         }
       }
+
       if (normsList.isEmpty()) {
         norms = null;
-      } else if (normsList.size() == 1) {
-        norms = normsList.get(0);
       } else {
         final NumericDocValues[] normsArr = normsList.toArray(new NumericDocValues[0]);
         final float[] weightArr = new float[normsList.size()];
@@ -90,16 +92,22 @@ final class MultiNormsLeafSimScorer {
     }
   }
 
-  /** Score the provided document assuming the given term document frequency.
-   *  This method must be called on non-decreasing sequences of doc ids.
-   *  @see SimScorer#score(float, long) */
+  /**
+   * Score the provided document assuming the given term document frequency. This method must be
+   * called on non-decreasing sequences of doc ids.
+   *
+   * @see SimScorer#score(float, long)
+   */
   public float score(int doc, float freq) throws IOException {
     return scorer.score(freq, getNormValue(doc));
   }
 
-  /** Explain the score for the provided document assuming the given term document frequency.
-   *  This method must be called on non-decreasing sequences of doc ids.
-   *  @see SimScorer#explain(Explanation, long) */
+  /**
+   * Explain the score for the provided document assuming the given term document frequency. This
+   * method must be called on non-decreasing sequences of doc ids.
+   *
+   * @see SimScorer#explain(Explanation, long)
+   */
   public Explanation explain(int doc, Explanation freqExpl) throws IOException {
     return scorer.explain(freqExpl, getNormValue(doc));
   }
@@ -123,13 +131,16 @@ final class MultiNormsLeafSimScorer {
     @Override
     public boolean advanceExact(int target) throws IOException {
       float normValue = 0;
+      boolean found = false;
       for (int i = 0; i < normsArr.length; i++) {
-        boolean found = normsArr[i].advanceExact(target);
-        assert found;
-        normValue += weightArr[i] * LENGTH_TABLE[Byte.toUnsignedInt((byte) normsArr[i].longValue())];
+        if (normsArr[i].advanceExact(target)) {
+          normValue +=
+              weightArr[i] * LENGTH_TABLE[Byte.toUnsignedInt((byte) normsArr[i].longValue())];
+          found = true;
+        }
       }
       current = SmallFloat.intToByte4(Math.round(normValue));
-      return true;
+      return found;
     }
 
     @Override

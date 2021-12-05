@@ -18,6 +18,7 @@ package org.apache.solr.cloud.api.collections;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,6 +71,7 @@ import org.apache.solr.common.cloud.ZkNodeProps;
 import org.apache.solr.common.cloud.ZkStateReader;
 import org.apache.solr.common.params.CollectionAdminParams;
 import org.apache.solr.common.params.CollectionParams.CollectionAction;
+import org.apache.solr.common.params.CommonAdminParams;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.CoreAdminParams.CoreAdminAction;
 import org.apache.solr.common.params.ModifiableSolrParams;
@@ -81,6 +83,8 @@ import org.apache.solr.common.util.StrUtils;
 import org.apache.solr.common.util.SuppressForbidden;
 import org.apache.solr.common.util.TimeSource;
 import org.apache.solr.common.util.Utils;
+import org.apache.solr.core.backup.BackupId;
+import org.apache.solr.core.backup.repository.BackupRepository;
 import org.apache.solr.handler.component.HttpShardHandlerFactory;
 import org.apache.solr.handler.component.ShardHandler;
 import org.apache.solr.handler.component.ShardRequest;
@@ -214,6 +218,7 @@ public class OverseerCollectionMessageHandler implements OverseerMessageHandler,
         .put(DELETENODE, new DeleteNodeCmd(this))
         .put(BACKUP, new BackupCmd(this))
         .put(RESTORE, new RestoreCmd(this))
+        .put(DELETEBACKUP, new DeleteBackupCmd(this))
         .put(CREATESNAPSHOT, new CreateSnapshotCmd(this))
         .put(DELETESNAPSHOT, new DeleteSnapshotCmd(this))
         .put(SPLITSHARD, new SplitShardCmd(this))
@@ -313,7 +318,7 @@ public class OverseerCollectionMessageHandler implements OverseerMessageHandler,
     params.set(CoreAdminParams.ACTION, CoreAdminAction.RELOAD.toString());
 
     String asyncId = message.getStr(ASYNC);
-    collectionCmd(message, params, results, Replica.State.ACTIVE, asyncId);
+    collectionCmd(message, params, results, Replica.State.ACTIVE, asyncId, Collections.emptySet());
   }
 
   @SuppressWarnings("unchecked")
@@ -622,7 +627,7 @@ public class OverseerCollectionMessageHandler implements OverseerMessageHandler,
   }
 
 
-  private void modifyCollection(ClusterState clusterState, ZkNodeProps message, @SuppressWarnings({"rawtypes"})NamedList results)
+  void modifyCollection(ClusterState clusterState, ZkNodeProps message, @SuppressWarnings({"rawtypes"})NamedList results)
       throws Exception {
 
     final String collectionName = message.getStr(ZkStateReader.COLLECTION_PROP);
@@ -650,6 +655,7 @@ public class OverseerCollectionMessageHandler implements OverseerMessageHandler,
 
         if (!updateKey.equals(ZkStateReader.COLLECTION_PROP)
             && !updateKey.equals(Overseer.QUEUE_OPERATION)
+            && !updateKey.equals(CommonAdminParams.ASYNC)
             && updateEntry.getValue() != null // handled below in a separate conditional
             && !updateEntry.getValue().equals(collection.get(updateKey))) {
           areChangesVisible = false;
@@ -713,6 +719,19 @@ public class OverseerCollectionMessageHandler implements OverseerMessageHandler,
     }
   }
 
+  @SuppressWarnings({"rawtypes"})
+  void cleanBackup(BackupRepository  repository, URI backupUri, BackupId backupId) throws Exception {
+    ((DeleteBackupCmd)commandMap.get(DELETEBACKUP))
+            .deleteBackupIds(backupUri, repository, Collections.singleton(backupId), new NamedList());
+  }
+
+  void deleteBackup(BackupRepository repository, URI backupPath,
+                    int maxNumBackup,
+                    @SuppressWarnings({"rawtypes"}) NamedList results) throws Exception {
+    ((DeleteBackupCmd)commandMap.get(DELETEBACKUP))
+            .keepNumberOfBackup(repository, backupPath, maxNumBackup, results);
+  }
+
   List<ZkNodeProps> addReplica(ClusterState clusterState, ZkNodeProps message, @SuppressWarnings({"rawtypes"})NamedList results, Runnable onComplete)
       throws Exception {
 
@@ -748,11 +767,6 @@ public class OverseerCollectionMessageHandler implements OverseerMessageHandler,
         throw new SolrException(ErrorCode.BAD_REQUEST,"Unable to get config name");
       }
     }
-  }
-
-  private List<Replica> collectionCmd(ZkNodeProps message, ModifiableSolrParams params,
-                             NamedList<Object> results, Replica.State stateMatcher, String asyncId) {
-    return collectionCmd( message, params, results, stateMatcher, asyncId, Collections.emptySet());
   }
 
   /**

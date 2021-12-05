@@ -159,6 +159,14 @@ IF "%SOLR_REQUESTLOG_ENABLED%"=="true" (
   set "SOLR_JETTY_CONFIG=!SOLR_JETTY_CONFIG! --module=requestlog"
 )
 
+REM Jetty gzip module enabled by default
+IF NOT DEFINED SOLR_GZIP_ENABLED (
+  set "SOLR_GZIP_ENABLED=true"
+)
+IF "%SOLR_GZIP_ENABLED%"=="true" (
+  set "SOLR_JETTY_CONFIG=!SOLR_JETTY_CONFIG! --module=gzip"
+)
+
 REM Authentication options
 
 IF NOT DEFINED SOLR_AUTH_TYPE (
@@ -225,10 +233,11 @@ IF "%1"=="status" goto get_info
 IF "%1"=="version" goto get_version
 IF "%1"=="-v" goto get_version
 IF "%1"=="-version" goto get_version
-IF "%1"=="assert" goto run_assert
-IF "%1"=="autoscaling" goto run_autoscaling
-IF "%1"=="export" goto run_export
-IF "%1"=="package" goto run_package
+IF "%1"=="assert" goto run_solrcli
+IF "%1"=="autoscaling" goto run_solrcli
+IF "%1"=="export" goto run_solrcli
+IF "%1"=="package" goto run_solrcli
+IF "%1"=="api" goto run_solrcli
 
 REM Only allow the command to be the first argument, assume start if not supplied
 IF "%1"=="start" goto set_script_cmd
@@ -305,7 +314,7 @@ goto done
 :script_usage
 @echo.
 @echo Usage: solr COMMAND OPTIONS
-@echo        where COMMAND is one of: start, stop, restart, healthcheck, create, create_core, create_collection, delete, version, zk, auth, assert, config, autoscaling, export
+@echo        where COMMAND is one of: start, stop, restart, status, healthcheck, create, create_core, create_collection, delete, version, zk, auth, assert, config, autoscaling, export, api, package
 @echo.
 @echo   Standalone server example (start Solr running in the background on port 8984):
 @echo.
@@ -345,6 +354,7 @@ goto done
 @echo   -z zkHost     Zookeeper connection string; only used when running in SolrCloud mode using -c
 @echo                   If neither ZK_HOST is defined in solr.in.cmd nor the -z parameter is specified,
 @echo                   an embedded ZooKeeper instance will be launched.
+@echo                   Set the ZK_CREATE_CHROOT environment variable to true if your ZK host has a chroot path, and you want to create it automatically."
 @echo.
 @echo   -m memory     Sets the min (-Xms) and max (-Xmx) heap size for the JVM, such as: -m 4g
 @echo                   results in: -Xms4g -Xmx4g; by default, this script sets the heap size to 512m
@@ -1155,6 +1165,11 @@ IF "%SOLR_MODE%"=="solrcloud" (
     IF "%verbose%"=="1" echo Configuring SolrCloud to launch an embedded Zookeeper using -DzkRun
     set "CLOUD_MODE_OPTS=!CLOUD_MODE_OPTS! -DzkRun"
   )
+
+  IF NOT "%ZK_CREATE_CHROOT%"=="" (
+    set "CLOUD_MODE_OPTS=!CLOUD_MODE_OPTS! -DcreateZkChroot=%ZK_CREATE_CHROOT%"
+  )
+
   IF EXIST "%SOLR_HOME%\collection1\core.properties" set "CLOUD_MODE_OPTS=!CLOUD_MODE_OPTS! -Dbootstrap_confdir=./solr/collection1/conf -Dcollection.configName=myconf -DnumShards=1"
 ) ELSE (
   set CLOUD_MODE_OPTS=
@@ -1207,7 +1222,7 @@ IF "%GC_TUNE%"=="" (
     -XX:+ExplicitGCInvokesConcurrent
 )
 
-if !JAVA_MAJOR_VERSION! GEQ 9  (
+if !JAVA_MAJOR_VERSION! GEQ 9 if NOT "%JAVA_VENDOR%" == "OpenJ9" (
   IF NOT "%GC_LOG_OPTS%"=="" (
     echo ERROR: On Java 9 you cannot set GC_LOG_OPTS, only default GC logging is available. Exiting
     GOTO :eof
@@ -1224,7 +1239,7 @@ if !JAVA_MAJOR_VERSION! GEQ 9  (
      -XX:+PrintTenuringDistribution ^
      -XX:+PrintGCApplicationStoppedTime
   )
-  if "%JAVA_VENDOR%" == "IBM J9" (
+  if "%JAVA_VENDOR%" == "OpenJ9" (
     set GC_LOG_OPTS=!GC_LOG_OPTS! "-Xverbosegclog:!SOLR_LOGS_DIR!\solr_gc.log" -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=9 -XX:GCLogFileSize=20M
   ) else (
     set GC_LOG_OPTS=!GC_LOG_OPTS! "-Xloggc:!SOLR_LOGS_DIR!\solr_gc.log" -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=9 -XX:GCLogFileSize=20M
@@ -1434,7 +1449,7 @@ echo ZK_HOST: !ZK_HOST!
   org.apache.solr.util.SolrCLI healthcheck -collection !HEALTHCHECK_COLLECTION! -zkHost !ZK_HOST! %HEALTHCHECK_VERBOSE%
 goto done
 
-:run_assert
+:run_solrcli
 "%JAVA%" %SOLR_SSL_OPTS% %AUTHC_OPTS% %SOLR_ZK_CREDS_AND_ACLS% -Dsolr.install.dir="%SOLR_TIP%" ^
   -Dlog4j.configurationFile="file:///%DEFAULT_SERVER_DIR%\resources\log4j2-console.xml" ^
   -classpath "%DEFAULT_SERVER_DIR%\solr-webapp\webapp\WEB-INF\lib\*;%DEFAULT_SERVER_DIR%\lib\ext\*" ^
@@ -1443,29 +1458,6 @@ if errorlevel 1 (
    exit /b 1
 )
 goto done
-
-:run_autoscaling
-"%JAVA%" %SOLR_SSL_OPTS% %AUTHC_OPTS% %SOLR_ZK_CREDS_AND_ACLS% -Dsolr.install.dir="%SOLR_TIP%" ^
-  -Dlog4j.configurationFile="file:///%DEFAULT_SERVER_DIR%\resources\log4j2-console.xml" ^
-  -classpath "%DEFAULT_SERVER_DIR%\solr-webapp\webapp\WEB-INF\lib\*;%DEFAULT_SERVER_DIR%\lib\ext\*" ^
-  org.apache.solr.util.SolrCLI %* 
-goto done:
-
-:run_export
-"%JAVA%" %SOLR_SSL_OPTS% %AUTHC_OPTS% %SOLR_ZK_CREDS_AND_ACLS% -Dsolr.install.dir="%SOLR_TIP%" ^
-  -Dlog4j.configurationFile="file:///%DEFAULT_SERVER_DIR%\resources\log4j2-console.xml" ^
-  -classpath "%DEFAULT_SERVER_DIR%\solr-webapp\webapp\WEB-INF\lib\*;%DEFAULT_SERVER_DIR%\lib\ext\*" ^
-  org.apache.solr.util.SolrCLI %*
-goto done:
-
-:run_package
-REM TODO: Compute the running Solr URL and populate it as a parameter (as has been done for the shell script)
-REM Without that, users will have to supply -solrUrl parameter in every request. Life can be so hard for Windows users!
-"%JAVA%" %SOLR_SSL_OPTS% %AUTHC_OPTS% %SOLR_ZK_CREDS_AND_ACLS% -Dsolr.install.dir="%SOLR_TIP%" ^
-  -Dlog4j.configurationFile="file:///%DEFAULT_SERVER_DIR%\resources\log4j2-console.xml" ^
-  -classpath "%DEFAULT_SERVER_DIR%\solr-webapp\webapp\WEB-INF\lib\*;%DEFAULT_SERVER_DIR%\lib\ext\*" ^
-  org.apache.solr.util.SolrCLI %*
-goto done:
 
 :parse_config_args
 IF [%1]==[] goto run_config
@@ -2038,28 +2030,18 @@ CALL :resolve_java_vendor
 
 set JAVA_MAJOR_VERSION=0
 set JAVA_VERSION_INFO=
-set JAVA_BUILD=0
 
 FOR /f "usebackq tokens=3" %%a IN (`^""%JAVA%" -version 2^>^&1 ^| findstr "version"^"`) do (
   set JAVA_VERSION_INFO=%%a
   REM Remove surrounding quotes
   set JAVA_VERSION_INFO=!JAVA_VERSION_INFO:"=!
 
-  echo "java version info is !JAVA_VERSION_INFO!"
   REM Extract the major Java version, e.g. 7, 8, 9, 10 ...
   for /f "tokens=1,2 delims=._-" %%a in ("!JAVA_VERSION_INFO!") do (
-    echo "Extracted major version is %%a"
     if %%a GEQ 9 (
       set JAVA_MAJOR_VERSION=%%a
     ) else (
       set JAVA_MAJOR_VERSION=%%b
-    )
-  )
-
-  REM Don't look for "_{build}" if we're on IBM J9.
-  if NOT "%JAVA_VENDOR%" == "IBM J9" (
-    for /f "delims=_ tokens=2" %%a in ("!JAVA_VERSION_INFO!") do (
-      set /a JAVA_BUILD=%%a
     )
   )
 )
@@ -2067,8 +2049,9 @@ GOTO :eof
 
 REM Set which JVM vendor we have
 :resolve_java_vendor
-"%JAVA%" -version 2>&1 | findstr /i "IBM J9" > nul
-if %ERRORLEVEL% == 1 ( set "JAVA_VENDOR=Oracle" ) else ( set "JAVA_VENDOR=IBM J9" )
+REM OpenJ9 was previously known as IBM J9, this will match both
+"%JAVA%" -version 2>&1 | findstr /i /C:"IBM J9" /C:"OpenJ9" > nul
+if %ERRORLEVEL% == 1 ( set "JAVA_VENDOR=Oracle" ) else ( set "JAVA_VENDOR=OpenJ9" )
 
 set JAVA_VENDOR_OUT=
 GOTO :eof

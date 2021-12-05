@@ -69,6 +69,7 @@ org.apache.lucene.analysis.miscellaneous.CodepointCountFilterFactory
 org.apache.lucene.analysis.miscellaneous.ConcatenateGraphFilterFactory
 org.apache.lucene.analysis.miscellaneous.DateRecognizerFilterFactory
 org.apache.lucene.analysis.miscellaneous.DelimitedTermFrequencyTokenFilterFactory
+org.apache.lucene.analysis.miscellaneous.DropIfFlaggedFilterFactory
 org.apache.lucene.analysis.miscellaneous.FingerprintFilterFactory
 org.apache.lucene.analysis.miscellaneous.FixBrokenOffsetsFilterFactory
 org.apache.lucene.analysis.miscellaneous.HyphenatedWordsFilterFactory
@@ -95,6 +96,7 @@ org.apache.lucene.analysis.no.NorwegianLightStemFilterFactory
 org.apache.lucene.analysis.no.NorwegianMinimalStemFilterFactory
 org.apache.lucene.analysis.pattern.PatternReplaceFilterFactory
 org.apache.lucene.analysis.pattern.PatternCaptureGroupFilterFactory
+org.apache.lucene.analysis.pattern.PatternTypingFilterFactory
 org.apache.lucene.analysis.payloads.DelimitedPayloadTokenFilterFactory
 org.apache.lucene.analysis.payloads.NumericPayloadTokenFilterFactory
 org.apache.lucene.analysis.payloads.TokenOffsetPayloadTokenFilterFactory
@@ -113,5 +115,7 @@ org.apache.lucene.analysis.sv.SwedishLightStemFilterFactory
 org.apache.lucene.analysis.synonym.SynonymFilterFactory
 org.apache.lucene.analysis.synonym.SynonymGraphFilterFactory
 org.apache.lucene.analysis.core.FlattenGraphFilterFactory
+org.apache.lucene.analysis.te.TeluguNormalizationFilterFactory
+org.apache.lucene.analysis.te.TeluguStemFilterFactory
 org.apache.lucene.analysis.tr.TurkishLowerCaseFilterFactory
 org.apache.lucene.analysis.util.ElisionFilterFactory

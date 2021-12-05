@@ -263,10 +263,56 @@
         <lst name="query">
           <str name="path">/admin/metrics</str>
           <lst name="params">
-            <str name="group">all</str>
-            <str name="type">all</str>
-            <str name="prefix"></str>
-            <str name="property"></str>
+            <!--
+              trim some of these expressions as needed if you don't care about
+              a particular group of metrics.
+            -->
+            <str name="expr">solr\.jetty:.*DefaultHandler.*</str>
+            <str name="expr">solr\.jvm:.*</str>
+            <str name="expr">solr\.node:.*</str>
+            <str name="expr">solr\.overseer:.*</str>
+            <str name="expr">solr\.core\..*:QUERY\..*</str>
+            <str name="expr">solr\.core\..*:ADMIN\..*</str>
+            <str name="expr">solr\.core\..*:CACHE\..*</str>
+            <str name="expr">solr\.core\..*:UPDATE\.updateHandler\..*</str>
+            <str name="expr">solr\.core\..*:CORE\.fs\..*</str>
+            <str name="expr">solr\.core\..*:HIGHLIGHTER\..*</str>
+            <str name="expr">solr\.core\..*:INDEX\..*</str>
+            <str name="expr">solr\.core\..*:REPLICATION\.replication\..*</str>
+            <str name="expr">solr\.core\..*:SEARCHER\.searcher\..*</str>
+
+            <!-- Alternative expressions, which are much stricter but still provide
+            enough data to populate the default dashboard.
+            These expressions omit many unused properties of the complex metrics,
+            and also skip whole groups of rarely used metrics: core ADMIN, REPLICATION,
+            HIGHLIGHTER, and selects only the most common QUERY handlers.
+
+            In order to use these expressions remove the default list of expressions
+            above and the START / END lines below. -->
+
+            <!-- === START ===
+
+            <str name="expr">solr\.jetty:.*\.DefaultHandler\.(dispatches|.*-requests|.*xx-responses):count</str>
+
+            <str name="expr">solr\.jvm:(buffers|gc).*</str>
+            <str name="expr">solr\.jvm:memory\.(heap|non-heap|pools)\.*\.usage</str>
+            <str name="expr">solr\.jvm:memory\.total</str>
+            <str name="expr">solr\.jvm:os\..*(FileDescriptorCount|Load.*|Size|processCpuTime)</str>
+            <str name="expr">solr\.jvm:threads\..*count</str>
+
+            <str name="expr">solr\.node:CONTAINER\.(cores|fs).*</str>
+
+            <str name="expr">solr\.core\..*:CORE\.fs\..*Space</str>
+            <str name="expr">solr\.core\..*:INDEX\.sizeInBytes</str>
+            <str name="expr">solr\.core\..*:QUERY\./(select|get|export|stream|query|graph|sql)\..*requestTimes:(count|1minRate|5minRate|median_ms|meanRate|p75_ms|p95_ms|p99_ms)</str>
+            <str name="expr">solr\.core\..*:QUERY\./(select|get|export|stream|query|graph|sql)\.totalTime</str>
+            <str name="expr">solr\.core\..*:QUERY\./(select|get|export|stream|query|graph|sql)\..*rrors:(count!1minRate)</str>
+            <str name="expr">solr\.core\..*:SEARCHER\.searcher\..*Doc.*</str>
+            <str name="expr">solr\.core\..*:UPDATE\.updateHandler\..*</str>
+            <str name="expr">solr\core\..*:CACHE\..*</str>
+
+            === END === -->
+
           </lst>
         </lst>
         <arr name="jsonQueries">
@@ -1017,16 +1063,18 @@
             $replica_obj.value.base_url as $base_url |
             $replica_obj.value.node_name as $node_name |
             $replica_obj.value.type as $type |
-            (if $replica_obj.value.state == "active" then 1.0 else 0.0 end) as $value |
+            $replica_obj.value.state as $state |
+            (if $state == "active" then 1.0 else 0.0 end) as $value |
             {
               name         : "solr_collections_replica_state",
               type         : "GAUGE",
               help         : "See following URL: https://lucene.apache.org/solr/guide/collections-api.html#clusterstatus",
-              label_names  : ["collection", "shard", "replica", "replica_name", "core", "base_url", "node_name", "type"],
-              label_values : [$collection, $shard, $replica, $replica_name, $core, $base_url, $node_name, $type],
+              label_names  : ["collection", "shard", "replica", "replica_name", "core", "base_url", "node_name", "type", "state"],
+              label_values : [$collection, $shard, $replica, $replica_name, $core, $base_url, $node_name, $type, $state],
               value        : $value
             }
           </str>
+
           <str>
             .cluster.collections | to_entries | .[] | . as $object |
             $object.key as $collection |
@@ -1047,6 +1095,51 @@
               label_names  : ["collection", "shard", "replica", "replica_name", "core", "base_url", "node_name", "type"],
               label_values : [$collection, $shard, $replica, $replica_name, $core, $base_url, $node_name, $type],
               value        : $value
+            }
+          </str>
+        </arr>
+      </lst>
+      <lst name="request">
+        <lst name="query">
+          <str name="path">/admin/zookeeper/status</str>
+        </lst>
+        <arr name="jsonQueries">
+          <str>
+            .zkStatus.ensembleSize as $value |
+            .zkStatus.mode as $mode |
+            {
+            name         : "solr_zookeeper_ensemble_size",
+            type         : "GAUGE",
+            help         : "See following URL: https://solr.apache.org/guide/cloud-screens.html#zk-status-view",
+            label_names  : [],
+            label_values : [],
+            value        : $value
+            }
+          </str>
+          <str>
+            .zkStatus.details[] as $object |
+            $object.host as $host |
+            $object.ok as $ok |
+            (if $object.clientPort != null and $ok then 1.0 else 0.0 end) as $value |
+            {
+            name         : "solr_zookeeper_nodestatus",
+            type         : "GAUGE",
+            help         : "See following URL: https://solr.apache.org/guide/cloud-screens.html#zk-status-view",
+            label_names  : ["host"],
+            label_values : [$host],
+            value        : $value
+            }
+          </str>
+          <str>
+            .zkStatus.status as $statusText |
+            (if $statusText == "green" then 1.0 else 0.0 end) as $value |
+            {
+            name         : "solr_zookeeper_status",
+            type         : "GAUGE",
+            help         : "See following URL: https://solr.apache.org/guide/cloud-screens.html#zk-status-view",
+            label_names  : ["status"],
+            label_values : [$statusText],
+            value        : $value
             }
           </str>
         </arr>

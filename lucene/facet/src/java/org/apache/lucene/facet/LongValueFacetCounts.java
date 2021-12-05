@@ -35,6 +35,7 @@ import org.apache.lucene.search.ConjunctionDISI;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.LongValues;
 import org.apache.lucene.search.LongValuesSource;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.InPlaceMergeSorter;
 import org.apache.lucene.util.PriorityQueue;
 
@@ -175,9 +176,17 @@ public class LongValueFacetCounts extends Facets {
       
         for (int doc = it.nextDoc(); doc != DocIdSetIterator.NO_MORE_DOCS; doc = it.nextDoc()) {
           int limit = values.docValueCount();
-          totCount += limit;
+          if (limit > 0) {
+            totCount++;
+          }
+          long previousValue = 0;
           for (int i = 0; i < limit; i++) {
-            increment(values.nextValue());
+            long value = values.nextValue();
+            // do not increment the count for duplicate values
+            if (i == 0 || value != previousValue) {
+              increment(value);
+          }
+            previousValue = value;
           }
         }
       }
@@ -195,13 +204,15 @@ public class LongValueFacetCounts extends Facets {
         continue;
       }
 
-      countAllOneSegment(values);
+      Bits liveDocs = context.reader().getLiveDocs();
+      countAllOneSegment(values, liveDocs);
     }
   }
 
-  private void countAllOneSegment(NumericDocValues values) throws IOException {
+  private void countAllOneSegment(NumericDocValues values, Bits liveDocs) throws IOException {
+    DocIdSetIterator valuesIt = (liveDocs != null) ? FacetUtils.liveDocsDISI(values, liveDocs) : values;
     int doc;
-    while ((doc = values.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+    while ((doc = valuesIt.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
       totCount++;
       increment(values.longValue());
     }
@@ -232,16 +243,26 @@ public class LongValueFacetCounts extends Facets {
         // this field has no doc values for this segment
         continue;
       }
+      Bits liveDocs = context.reader().getLiveDocs();
       NumericDocValues singleValues = DocValues.unwrapSingleton(values);
       if (singleValues != null) {
-        countAllOneSegment(singleValues);
+        countAllOneSegment(singleValues, liveDocs);
       } else {
+        DocIdSetIterator valuesIt = (liveDocs != null) ? FacetUtils.liveDocsDISI(values, liveDocs) : values;
         int doc;
-        while ((doc = values.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+        while ((doc = valuesIt.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
           int limit = values.docValueCount();
-          totCount += limit;
+          if (limit > 0) {
+            totCount++;
+          }
+          long previousValue = 0;
           for (int i = 0; i < limit; i++) {
-            increment(values.nextValue());
+            long value = values.nextValue();
+            // do not increment the count for duplicate values
+            if (i == 0 || value != previousValue) {
+              increment(value);
+            }
+            previousValue = value;
           }
         }
       }

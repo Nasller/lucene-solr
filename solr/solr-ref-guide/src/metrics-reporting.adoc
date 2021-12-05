@@ -95,7 +95,7 @@ In the future, metrics will be added for shard leaders and cluster nodes, includ
 
 The metrics available in your system can be customized by modifying the `<metrics>` element in `solr.xml`.
 
-TIP: See also the section <<format-of-solr-xml.adoc#format-of-solr-xml,Format of Solr.xml>> for more information about the `solr.xml` file, where to find it, and how to edit it.
+TIP: See also the section <<format-of-solr-xml.adoc#,Format of Solr.xml>> for more information about the `solr.xml` file, where to find it, and how to edit it.
 
 === Disabling the Metrics Collection
 The `<metrics>` element in `solr.xml` supports one attribute `enabled`, which takes a boolean value,
@@ -443,6 +443,9 @@ The port number for the server.
 When `true` use multicast UDP communication, otherwise use UDP unicast. Default is `false`.
 
 === Shard and Cluster Reporters
+[NOTE]
+This functionality is deprecated and will be removed in Solr 9.0.
+
 These two reporters can be used for aggregation of metrics reported from replicas to shard leader (the "shard" reporter),
 and from any local registry to the Overseer node.
 
@@ -673,14 +676,31 @@ A few query parameters are available to limit your request to only certain metri
 `property`:: Allows requesting only this metric from any compound metric. Multiple `property` parameters can be combined to act as an OR request. For example, to only get the 99th and 999th percentile values from all metric types and groups, you can add `&property=p99_ms&property=p999_ms` to your request. This can be combined with `group`, `type`, and `prefix` as necessary.
 
 `key`:: fully-qualified metric name, which specifies one concrete metric instance (parameter can be
-specified multiple times to retrieve multiple concrete metrics). *NOTE: when this parameter is used, other
-selection methods listed above are ignored.* Fully-qualified name consists of registry name, colon and
+specified multiple times to retrieve multiple concrete metrics). *NOTE: when this parameter is used, any other
+selection methods are ignored.* Fully-qualified name consists of registry name, colon and
 metric name, with optional colon and metric property. Colons in names can be escaped using back-slash `\`
 character. Examples:
 
 * `key=solr.node:CONTAINER.fs.totalSpace`
 * `key=solr.core.collection1:QUERY./select.requestTimes:max_ms`
 * `key=solr.jvm:system.properties:user.name`
+
+`expr`:: Extended notation of the `key` selection criteria, which supports regular expressions for each of the
+parts supported by the `key` selector. This parameter can be specified multiple times to retrieve metrics that match
+any expression. The API guarantees that the output will consist only of unique metric names even if
+multiple expressions match the same metric name. Note: order of multiple `expr` parameters matters here - only the first value of the first matching expression will be recorded, subsequent values for the same metric name
+produced by matching other expressions will be skipped.
++
+Fully-qualified expression consists of at least two and at most three regex patterns separated by
+colons: a registry pattern, colon, a metric pattern, and then an optional colon and metric property pattern.
+Colons and other regex meta-characters in names and in regular expressions MUST be escaped using backslash (`\`) character.
++
+*NOTE: when this parameter is used, any other selection methods are ignored.*
++
+Examples:
+
+* `expr=solr\.core\..\*:QUERY\..*\.requestTimes:max_ms`
+* `expr=solr\.jvm:system\.properties:user\..*`
 
 `compact`:: When false, a more verbose format of the response will be returned. Instead of a response like this:
 +

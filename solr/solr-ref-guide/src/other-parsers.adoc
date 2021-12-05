@@ -20,11 +20,11 @@ In addition to the main query parsers discussed earlier, there are several other
 
 This section details the other parsers, and gives examples for how they might be used.
 
-Many of these parsers are expressed the same way as <<local-parameters-in-queries.adoc#local-parameters-in-queries,Local Parameters in Queries>>.
+Many of these parsers are expressed the same way as <<local-parameters-in-queries.adoc#,Local Parameters in Queries>>.
 
 == Block Join Query Parsers
 
-There are two query parsers that support block joins. These parsers allow indexing and searching for relational content that has been <<indexing-nested-documents.adoc#indexing-nested-documents, indexed as Nested Documents>>.
+There are two query parsers that support block joins. These parsers allow indexing and searching for relational content that has been <<indexing-nested-documents.adoc#, indexed as Nested Documents>>.
 
 The example usage of the query parsers below assumes the following documents have been indexed:
 
@@ -173,7 +173,7 @@ When subordinate clause (`<someChildren>`) is omitted, it's parsed as a _segment
 [#block-mask]
 === Block Masks: The `of` and `which` local params
 
-The purpose of the "Block Mask" query specified as either an `of` or `which` param (depending on the parser used) is to identy the set of all documents in the index which should be treated as "parents" _(or their ancestors)_ and which documents should be treated as "children".  This is important because in the "on disk" index, the relationships are flattened into "blocks" of documents, so the `of` / `which` params are needed to serve as a "mask" against the flat document blocks to identify the boundaries of every hierarchical relationship.
+The purpose of the "Block Mask" query specified as either an `of` or `which` parameter (depending on the parser used) is to identy the set of all documents in the index which should be treated as "parents" _(or their ancestors)_ and which documents should be treated as "children".  This is important because in the "on disk" index, the relationships are flattened into "blocks" of documents, so the `of` / `which` params are needed to serve as a "mask" against the flat document blocks to identify the boundaries of every hierarchical relationship.
 
 In the example queries above, we were able to use a very simple Block Mask of `doc_type:parent` because our data is very simple: every document is either a `parent` or a `child`  So this query string easily distinguishes _all_ of our documents.
 
@@ -184,7 +184,7 @@ A common mistake is to try and use a `which` parameter that is more restrictive 
 q={!parent which="title:join"}comments:support
 ----
 
-This type of query will frequently not work the way you might expect.  Since the `which` param only identifies _some_ of the "parent" documents, the resulting query can match "parent" documents it should not, because it will mistakenly identify all documents which do _not_ match the `which="title:join"` Block Mask as children of the next "parent" document in the index (that does match this Mask).
+This type of query will frequently not work the way you might expect.  Since the `which` parameter only identifies _some_ of the "parent" documents, the resulting query can match "parent" documents it should not, because it will mistakenly identify all documents which do _not_ match the `which="title:join"` Block Mask as children of the next "parent" document in the index (that does match this Mask).
 
 A similar problematic situation can arise when mixing parent/child documents with "simple" documents that have no children _and do not match the query used to identify 'parent' documents_.  For example, if we add the following document to our existing parent/child example documents:
 
@@ -297,7 +297,7 @@ The `CollapsingQParser` is really a _post filter_ that provides more performant 
 
 This parser collapses the result set to a single document per group before it forwards the result set to the rest of the search components. So all downstream components (faceting, highlighting, etc.) will work with the collapsed result set.
 
-Details about using the `CollapsingQParser` can be found in the section <<collapse-and-expand-results.adoc#collapse-and-expand-results,Collapse and Expand Results>>.
+Details about using the `CollapsingQParser` can be found in the section <<collapse-and-expand-results.adoc#,Collapse and Expand Results>>.
 
 == Complex Phrase Query Parser
 
@@ -406,7 +406,7 @@ q=+field:text +COLOR:Red +SIZE:XL
 
 == Function Query Parser
 
-The `FunctionQParser` extends the `QParserPlugin` and creates a function query from the input value. This is only one way to use function queries in Solr; for another, more integrated, approach, see the section on <<function-queries.adoc#function-queries,Function Queries>>.
+The `FunctionQParser` extends the `QParserPlugin` and creates a function query from the input value. This is only one way to use function queries in Solr; for another, more integrated, approach, see the section on <<function-queries.adoc#,Function Queries>>.
 
 Example:
 
@@ -484,7 +484,7 @@ Boolean that indicates if the results of the query should be filtered so that on
 
 === Graph Query Limitations
 
-The `graph` parser only works in single node Solr installations, or with <<solrcloud.adoc#solrcloud,SolrCloud>> collections that use exactly 1 shard.
+The `graph` parser only works in single node Solr installations, or with <<solrcloud.adoc#,SolrCloud>> collections that use exactly 1 shard.
 
 === Graph Query Examples
 
@@ -648,7 +648,7 @@ The hash range query parser uses a special cache to improve the speedup of the q
 == Join Query Parser
 
 The Join query parser allows users to run queries that normalize relationships between documents.
-Solr runs a subquery of the user's choosing (the `v` param), identifies all the values that matching documents have in a field of interest (the `from` param), and then returns documents where those values are contained in a second field of interest (the `to` param).
+Solr runs a subquery of the user's choosing (the `v` parameter), identifies all the values that matching documents have in a field of interest (the `from` parameter), and then returns documents where those values are contained in a second field of interest (the `to` parameter).
 
 In practice, these semantics are much like "inner queries" in a SQL engine.
 As an example, consider the Solr query below:
@@ -890,7 +890,7 @@ Example:
 {!ltr model=myModel reRankDocs=100}
 ----
 
-Details about using the `LTRQParserPlugin` can be found in the <<learning-to-rank.adoc#learning-to-rank,Learning To Rank>> section.
+Details about using the `LTRQParserPlugin` can be found in the <<learning-to-rank.adoc#,Learning To Rank>> section.
 
 == Max Score Query Parser
 
@@ -902,6 +902,199 @@ Example:
 ----
 {!maxscore tie=0.01}C OR (D AND E)
 ----
+
+== MinHash Query Parser
+
+The `MinHashQParser` builds queries for fields analysed with the `MinHashFilterFactory`.
+The queries measure Jaccard similarity between the query string and MinHash fields; allowing for faster, approximate matching if required.
+The parser supports two modes of operation.
+The first, when tokens are generated from text by normal analysis; and the second, when explicit tokens are provided.
+
+Currently the score returned by the query reflects the number of top level elements that match and is *not* normalised between 0 and 1.
+
+`sim`::
+The required minimum similarity.
+The default behaviour is to find any similarity greater than zero.
+A numeric value between `0.0` and `1.0`.
+
+`tp`::
+The required true positive rate.
+The default is `1.0`.
+For values lower than `1.0`, an optimised and faster banded query may be used.
+The banding behaviour depends on the values of `sim` and `tp` requested.
+
+`field`::
+The field in which the MinHash value is indexed.
+This field is normally used to analyse the text provided to the query parser.
+It is also used for the query field.
+
+`sep`::
+A separator string.
+By default, this is the empty string, "".
+If a non-empty separator string is provided, the query string is interpreted as a list of pre-analysed values separated by the separator string.
+In this case, no other analysis of the string is performed: the tokens are used as found.
+
+`analyzer_field`::
+This parameter can be used to define how text is analysed, distinct from the query field.
+It is used to analyse query text when using a pre-analysed string `field` to store MinHash values.
+See the example below.
+
+This query parser is registered with the name `min_hash`.
+
+=== Example with Analysed Fields
+
+Typical analysis:
+
+[source,xml]
+----
+ <fieldType name="text_min_hash" class="solr.TextField" positionIncrementGap="100">
+    <analyzer>
+      <tokenizer class="solr.ICUTokenizerFactory"/>
+      <filter class="solr.ICUFoldingFilterFactory"/>
+      <filter class="solr.ShingleFilterFactory" minShingleSize="5" outputUnigrams="false" outputUnigramsIfNoShingles="false" maxShingleSize="5" tokenSeparator=" "/>
+      <filter class="org.apache.lucene.analysis.minhash.MinHashFilterFactory" bucketCount="512" hashSetSize="1" hashCount="1"/>
+    </analyzer>
+  </fieldType>
+...
+
+  <field name="min_hash_analysed" type="text_min_hash" multiValued="false" indexed="true" stored="false" />
+----
+
+Here, the input text is split on whitespace, the tokens normalised, the resulting token stream assembled into a stream of all the 5 word shingles which are then hashed.
+The lowest hashes from each of 512 buckets are kept and produced as the output tokens.
+
+Queries to this field would need to generate at least one shingle so would require 5 distinct tokens.
+
+Example queries:
+
+[source,text]
+----
+ {!min_hash field="min_hash_analysed"}At least five or more tokens
+
+ {!min_hash field="min_hash_analysed" sim="0.5"}At least five or more tokens
+
+ {!min_hash field="min_hash_analysed" sim="0.5" tp="0.5"}At least five or more tokens
+----
+
+=== Example with Pre-Analysed Fields
+
+Here, the MinHash is pre-computed, most likely using Lucene analysis inline as shown below.
+It would be more prudent to get the analyser from the schema.
+
+[source,java]
+----
+    ICUTokenizerFactory factory = new ICUTokenizerFactory(Collections.EMPTY_MAP);
+    factory.inform(null);
+    Tokenizer tokenizer = factory.create();
+    tokenizer.setReader(new StringReader(text));
+    ICUFoldingFilterFactory filter = new ICUFoldingFilterFactory(Collections.EMPTY_MAP);
+    TokenStream ts = filter.create(tokenizer);
+    HashMap<String, String> args = new HashMap<>();
+    args.put("minShingleSize", "5");
+    args.put("outputUnigrams", "false");
+    args.put("outputUnigramsIfNoShingles", "false");
+    args.put("maxShingleSize", "5");
+    args.put("tokenSeparator", " ");
+    ShingleFilterFactory sff = new ShingleFilterFactory(args);
+    ts = sff.create(ts);
+    HashMap<String, String> args2 = new HashMap<>();
+    args2.put("bucketCount", "512");
+    args2.put("hashSetSize", "1");
+    args2.put("hashCount", "1");
+    MinHashFilterFactory mhff = new MinHashFilterFactory(args2);
+    ts = mhff.create(ts);
+
+    CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
+
+    ts.reset();
+    while (ts.incrementToken())
+    {
+        char[] buff = termAttribute.buffer();
+        ...
+     }
+     ts.end();
+----
+
+The schema will just define a multi-valued string value and an optional field to use at anlysis time - similar to above.
+
+[source,xml]
+----
+ <field name="min_hash_string" type="strings" multiValued="true" indexed="true" stored="true"/>
+
+ <!-- Optional -->
+ <field name="min_hash_analysed" type="text_min_hash" multiValued="false" indexed="true" stored="false"/>
+
+ <fieldType name="strings" class="solr.StrField" sortMissingLast="true" multiValued="true"/>
+
+ <!-- Optional -->
+ <fieldType name="text_min_hash" class="solr.TextField" positionIncrementGap="100">
+    <analyzer>
+      <tokenizer class="solr.ICUTokenizerFactory"/>
+      <filter class="solr.ICUFoldingFilterFactory"/>
+      <filter class="solr.ShingleFilterFactory" minShingleSize="5" outputUnigrams="false" outputUnigramsIfNoShingles="false" maxShingleSize="5" tokenSeparator=" "/>
+      <filter class="org.apache.lucene.analysis.minhash.MinHashFilterFactory" bucketCount="512" hashSetSize="1" hashCount="1"/>
+    </analyzer>
+  </fieldType>
+----
+
+Example queries:
+
+[source,plain]
+----
+{!min_hash field="min_hash_string" sep=","}HASH1,HASH2,HASH3
+
+{!min_hash field="min_hash_string" sim="0.9" analyzer_field="min_hash_analysed"}Lets hope the config and code for analysis are in sync
+----
+
+It is also possible to query analysed fields using known hashes (the reverse of the above)
+
+[source,plain]
+{!min_hash field="min_hash_analysed" analyzer_field="min_hash_string" sep=","}HASH1,HASH2,HASH3
+
+Pre-analysed fields mean hash values can be recovered per document rather than re-hashed.
+An initial query stage that returns the minhash stored field could be followed by a `min_hash` query to find similar documents.
+
+=== Banded Queries
+
+The default behaviour of the query parser, given the configuration above is to generate a boolean query and OR 512 constant score term queries together: one for each hash.
+In this case, generating a score of 1 if one hash matches and a score of 512 if they all match.
+
+A banded query mixes conjunctions and disjunctions.
+We could have 256 bands each of two queries ANDed together, 128 with 4 hashes ANDed together etc.
+With fewer bands query performance increases but we may miss some matches.
+There is a trade off between speed and accuracy.
+With 64 bands the score will range from 0 to 64 (the number of bands ORed together)
+
+Given the required similarity and an acceptable true positive rate, the query parser computes the appropriate band size^[1]^.
+It finds the minimum number of bands subject to
+
+latexmath:[tp \leq 1 - (1 - sim^{rows})^{bands}]
+
+If there are not enough hashes to fill the final band of the query it wraps to the start.
+
+=== A Note on Similarity
+
+Low similarities can be meaningful.
+The number of 5 word hashes is large.
+Even a single match may indicate some kind of similarity either in meaning, style or structure.
+
+=== Further Reading
+
+For a general introduction see "Mining of Massive Datasets"^[1]^.
+
+For documents of ~1500 words expect an index size overhead of ~10%; your milage will vary.
+512 hashes would be expected to represent ~2500 words well.
+
+Using a set of MinHash values was proposed in the initial paper^[2]^ but provides a biased estimate of Jaccard similarity.
+There may be cases where that bias is a good thing.
+Likewise with rotation and short documents.
+The implementation is derived from an unbiased method proposed in later work^[3]^.
+
+^[1]^ Leskovec, Jure; Rajaraman, Anand & Ullman, Jeffrey D. "Mining of Massive Datasets",  Cambridge University Press; 2 edition (December 29, 2014), Chapter 3, ISBN: 9781107077232.
+
+^[2]^ Broder, Andrei Z. (1997), "On the resemblance and containment of documents", Compression and Complexity of Sequences: Proceedings, Positano, Amalfitan Coast, Salerno, Italy, June 11-13, 1997 (PDF), IEEE, pp. 21–29, doi:10.1109/SEQUEN.1997.666900.
+
+^[3]^ Shrivastava, Anshumali & Li, Ping (2014), "Improved Densification of One Permutation Hashing", 30th Conference on Uncertainty in Artificial Intelligence (UAI), Quebec City, Quebec, Canada, July 23-27, 2014, AUAI, pp. 225-234, http://www.auai.org/uai2014/proceedings/individuals/225.pdf
 
 == More Like This Query Parser
 
@@ -1039,7 +1232,7 @@ http://localhost:8983/solr/techproducts?q=memory _query_:{!rank f='pagerank', fu
 
 The `ReRankQParserPlugin` is a special purpose parser for Re-Ranking the top results of a simple query using a more complex ranking query.
 
-Details about using the `ReRankQParserPlugin` can be found in the <<query-re-ranking.adoc#query-re-ranking,Query Re-Ranking>> section.
+Details about using the `ReRankQParserPlugin` can be found in the <<query-re-ranking.adoc#,Query Re-Ranking>> section.
 
 == Simple Query Parser
 
@@ -1093,7 +1286,7 @@ Any errors in syntax are ignored and the query parser will interpret queries as 
 
 There are two spatial QParsers in Solr: `geofilt` and `bbox`. But there are other ways to query spatially: using the `frange` parser with a distance function, using the standard (lucene) query parser with the range syntax to pick the corners of a rectangle, or with RPT and BBoxField you can use the standard query parser but use a special syntax within quotes that allows you to pick the spatial predicate.
 
-All these options are documented further in the section <<spatial-search.adoc#spatial-search,Spatial Search>>.
+All these options are documented further in the section <<spatial-search.adoc#,Spatial Search>>.
 
 == Surround Query Parser
 
@@ -1118,7 +1311,7 @@ The non-unary operators (everything but `NOT`) support both infix `(a AND b AND 
 
 `SwitchQParser` is a `QParserPlugin` that acts like a "switch" or "case" statement.
 
-The primary input string is trimmed and then prefixed with `case.` for use as a key to lookup a "switch case" in the parser's local params. If a matching local param is found the resulting param value will then be parsed as a subquery, and returned as the parse result.
+The primary input string is trimmed and then prefixed with `case.` for use as a key to lookup a "switch case" in the parser's local params. If a matching local param is found the resulting parameter value will then be parsed as a subquery, and returned as the parse result.
 
 The `case` local param can be optionally be specified as a switch case to match missing (or blank) input strings. The `default` local param can optionally be specified as a default case to use if the input string does not match any other switch case local params. If default is not specified, then any input which does not match a switch case local param will result in a syntax error.
 
@@ -1189,7 +1382,7 @@ If no analysis or transformation is desired for any type of field, see the <<Raw
 
 `TermsQParser` functions similarly to the <<Term Query Parser,Term Query Parser>> but takes in multiple values separated by commas and returns documents matching any of the specified values.
 
-This can be useful for generating filter queries from the external human readable terms returned by the faceting or terms components, and may be more efficient in some cases than using the <<the-standard-query-parser.adoc#the-standard-query-parser,Standard Query Parser>> to generate a boolean query since the default implementation `method` avoids scoring.
+This can be useful for generating filter queries from the external human readable terms returned by the faceting or terms components, and may be more efficient in some cases than using the <<the-standard-query-parser.adoc#,Standard Query Parser>> to generate a boolean query since the default implementation `method` avoids scoring.
 
 This query parser takes the following parameters:
 

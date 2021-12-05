@@ -30,6 +30,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.util.LuceneTestCase;
 import org.apache.lucene.util.LuceneTestCase.Slow;
 import org.apache.lucene.util.TestUtil;
 import org.apache.solr.SolrTestCaseJ4;
@@ -55,6 +56,13 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Tests for index backing up and restoring index snapshots.
+ *
+ * These tests use the deprecated "full-snapshot" based backup method.  For tests that cover similar snapshot
+ * functionality incrementally, see {@link org.apache.solr.handler.TestIncrementalCoreBackup}
+ */
+@LuceneTestCase.SuppressCodecs({"SimpleText"}) // Backups do checksum validation against a footer value not present in 'SimpleText'
 @SolrTestCaseJ4.SuppressSSL // Currently unknown why SSL does not work with this test
 @Slow
 public class TestSolrCoreSnapshots extends SolrCloudTestCase {
@@ -130,6 +138,7 @@ public class TestSolrCoreSnapshots extends SolrCloudTestCase {
         params.put("name", backupName);
         params.put("commitName", commitName);
         params.put("location", location);
+        params.put("incremental", "false");
         BackupRestoreUtils.runCoreAdminCommand(replicaBaseUrl, coreName, CoreAdminAction.BACKUPCORE.toString(), params);
       }
 

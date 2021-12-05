@@ -59,6 +59,12 @@ Each cache implementation also supports a `maxIdleTime` attribute that controls 
 
 `FastLRUCache` and `LFUCache` support `showItems` attribute. This is the number of cache items to display in the stats page for the cache. It is for debugging.
 
+`CaffeineCache` supports the `async` attribute, which determines whether the cache stores direct results (`async=false`, disabled) or whether it will store indirect references to the computation (`async=true`, enabled by default).
+If your queries include child documents or join queries, then async cache must be enabled to function properly.
+Disabling the async option may use slightly less memory per cache entry at the expense of increased CPU.
+The async cache provides most significant improvement with many concurrent queries requesting the same result set that has not yet been cached, as an alternative to larger cache sizes or increased auto-warming counts.
+However, the async cache will not prevent data races for time-limited queries, since those are expected to provide partial results.
+
 All caches can be disabled using the parameter `enabled` with a value of `false`. Caches can also be disabled on a query-by-query basis with the `cache` parameter, as described in the section <<common-query-parameters.adoc#cache-parameter,cache Parameter>>. 
 
 Details of each cache are described below.
@@ -67,9 +73,9 @@ Details of each cache are described below.
 
 This cache is used by `SolrIndexSearcher` for filters (DocSets) for unordered sets of all documents that match a query. The numeric attributes control the number of entries in the cache.
 
-The most typical way Solr uses the `filterCache` is to cache results of each `fq` search parameter, though there are some other cases as well. Subsequent queries using the same parameter filter query result in cache hits and rapid returns of results. See <<searching.adoc#searching,Searching>> for a detailed discussion of the `fq` parameter. Another Solr feature using this cache is the `filter(...)` syntax in the default Lucene query parser.
+The most typical way Solr uses the `filterCache` is to cache results of each `fq` search parameter, though there are some other cases as well. Subsequent queries using the same parameter filter query result in cache hits and rapid returns of results. See <<searching.adoc#,Searching>> for a detailed discussion of the `fq` parameter. Another Solr feature using this cache is the `filter(...)` syntax in the default Lucene query parser.
 
-Solr also uses this cache for faceting when the configuration parameter `facet.method` is set to `fc`. For a discussion of faceting, see <<searching.adoc#searching,Searching>>.
+Solr also uses this cache for faceting when the configuration parameter `facet.method` is set to `fc`. For a discussion of faceting, see <<searching.adoc#,Searching>>.
 
 The filter cache uses a specialized cache named as FastLRUCache which is optimized for fast concurrent access with the trade-off that writes and evictions are costlier than the LRUCache used for query result cache and document cache.
 
@@ -256,7 +262,7 @@ Good query selection is key with this type of listener. It's best to choose your
 
 There are two types of events that can trigger a listener. A `firstSearcher` event occurs when a new searcher is being prepared but there is no current registered searcher to handle requests or to gain auto-warming data from (i.e., on Solr startup). A `newSearcher` event is fired whenever a new searcher is being prepared and there is a current searcher handling requests.
 
-The (commented out) examples below can be found in the `solrconfig.xml` file of the `sample_techproducts_configs` <<config-sets.adoc#config-sets,configset>> included with Solr, and demonstrate using the `solr.QuerySenderListener` class to warm a set of explicit queries:
+The (commented out) examples below can be found in the `solrconfig.xml` file of the `sample_techproducts_configs` <<config-sets.adoc#,configset>> included with Solr, and demonstrate using the `solr.QuerySenderListener` class to warm a set of explicit queries:
 
 [source,xml]
 ----

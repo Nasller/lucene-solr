@@ -24,7 +24,6 @@ import org.apache.lucene.search.DocValuesFieldExistsQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.join.BitSetProducer;
-import org.apache.lucene.search.join.QueryBitSetProducer;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrException.ErrorCode;
@@ -35,6 +34,7 @@ import org.apache.solr.search.DocSet;
 import org.apache.solr.search.QParser;
 import org.apache.solr.search.SolrReturnFields;
 import org.apache.solr.search.SyntaxError;
+import org.apache.solr.search.join.BlockJoinParentQParser;
 
 import static org.apache.solr.schema.IndexSchema.NEST_PATH_FIELD_NAME;
 
@@ -64,6 +64,7 @@ public class ChildDocTransformerFactory extends TransformerFactory {
   private static final BooleanQuery rootFilter = new BooleanQuery.Builder()
       .add(new BooleanClause(new MatchAllDocsQuery(), BooleanClause.Occur.MUST))
       .add(new BooleanClause(new DocValuesFieldExistsQuery(NEST_PATH_FIELD_NAME), BooleanClause.Occur.MUST_NOT)).build();
+  public static final String CACHE_NAME="perSegFilter";
 
   @Override
   public DocTransformer create(String field, SolrParams params, SolrQueryRequest req) {
@@ -98,7 +99,7 @@ public class ChildDocTransformerFactory extends TransformerFactory {
     // DocSet parentDocSet = req.getSearcher().getDocSet(parentFilterQuery);
     // then return BitSetProducer with custom BitSet impl accessing the docSet
     if (parentFilterStr == null) {
-      parentsFilter = !buildHierarchy ? null : new QueryBitSetProducer(rootFilter);
+      parentsFilter = !buildHierarchy ? null : getCachedBitSetProducer(req, rootFilter);
     } else {
       if(buildHierarchy) {
         throw new SolrException(ErrorCode.BAD_REQUEST, "Parent filter should not be sent when the schema is nested");
@@ -107,7 +108,7 @@ public class ChildDocTransformerFactory extends TransformerFactory {
       if (query == null) {
         throw new SolrException(ErrorCode.BAD_REQUEST, "Invalid Parent filter '" + parentFilterStr + "', resolves to null");
       }
-      parentsFilter = new QueryBitSetProducer(query);
+      parentsFilter = getCachedBitSetProducer(req, query);
     }
 
     String childFilterStr = params.get( "childFilter" );
@@ -144,24 +145,24 @@ public class ChildDocTransformerFactory extends TransformerFactory {
     try {
       return QParser.getParser(qstr, req).getQuery();
     } catch (SyntaxError syntaxError) {
-      throw new SolrException(ErrorCode.BAD_REQUEST, "Failed to parse '" + param + "' param.");
+      throw new SolrException(
+              ErrorCode.BAD_REQUEST,
+              "Failed to parse '" + param + "' param: " + syntaxError.getMessage(),
+              syntaxError);
     }
   }
 
-  // NOTE: THIS FEATURE IS PRESENTLY EXPERIMENTAL; WAIT TO SEE IT IN THE REF GUIDE.  FINAL SYNTAX IS TBD.
   protected static String processPathHierarchyQueryString(String queryString) {
     // if the filter includes a path string, build a lucene query string to match those specific child documents.
     // e.g. /toppings/ingredients/name_s:cocoa -> +_nest_path_:/toppings/ingredients +(name_s:cocoa)
     // ingredients/name_s:cocoa -> +_nest_path_:*/ingredients +(name_s:cocoa)
     int indexOfFirstColon = queryString.indexOf(':');
     if (indexOfFirstColon <= 0) {
-      return queryString;// give up
+      return queryString; // regular filter, not hierarchy based.
     }
     int indexOfLastPathSepChar = queryString.lastIndexOf(PATH_SEP_CHAR, indexOfFirstColon);
     if (indexOfLastPathSepChar < 0) {
-      // regular filter, not hierarchy based.
-      return ClientUtils.escapeQueryChars(queryString.substring(0, indexOfFirstColon))
-          + ":" + ClientUtils.escapeQueryChars(queryString.substring(indexOfFirstColon + 1));
+      return queryString; // regular filter, not hierarchy based.
     }
     final boolean isAbsolutePath = queryString.charAt(0) == PATH_SEP_CHAR;
     String path = ClientUtils.escapeQueryChars(queryString.substring(0, indexOfLastPathSepChar));
@@ -170,6 +171,10 @@ public class ChildDocTransformerFactory extends TransformerFactory {
     return
         "+" + NEST_PATH_FIELD_NAME + (isAbsolutePath? ":": ":*\\/") + path
         + " +(" + remaining + ")";
+  }
+
+  private static BitSetProducer getCachedBitSetProducer(final SolrQueryRequest request, Query query) {
+    return BlockJoinParentQParser.getCachedFilter(request, query).getFilter();
   }
 }
 

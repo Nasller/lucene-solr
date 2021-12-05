@@ -39,7 +39,9 @@ import org.apache.solr.pkg.PackageListeners;
 import org.apache.solr.pkg.PackageLoader;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
+import org.apache.solr.search.CursorMark;
 import org.apache.solr.search.SolrQueryTimeoutImpl;
+import org.apache.solr.search.SortSpec;
 import org.apache.solr.search.facet.FacetModule;
 import org.apache.solr.security.AuthorizationContext;
 import org.apache.solr.security.PermissionNameProvider;
@@ -298,19 +300,18 @@ public class SearchHandler extends RequestHandlerBase implements SolrCoreAware, 
 
     final RTimerTree timer = rb.isDebug() ? req.getRequestTimer() : null;
 
-    if (req.getCore().getCircuitBreakerManager().isEnabled()) {
+    final CircuitBreakerManager circuitBreakerManager = req.getCore().getCircuitBreakerManager();
+    if (circuitBreakerManager.isEnabled()) {
       List<CircuitBreaker> trippedCircuitBreakers;
 
       if (timer != null) {
         RTimerTree subt = timer.sub("circuitbreaker");
         rb.setTimer(subt);
 
-        CircuitBreakerManager circuitBreakerManager = req.getCore().getCircuitBreakerManager();
         trippedCircuitBreakers = circuitBreakerManager.checkTripped();
 
         rb.getTimer().stop();
       } else {
-        CircuitBreakerManager circuitBreakerManager = req.getCore().getCircuitBreakerManager();
         trippedCircuitBreakers = circuitBreakerManager.checkTripped();
       }
 
@@ -342,6 +343,18 @@ public class SearchHandler extends RequestHandlerBase implements SolrCoreAware, 
       subt.stop();
     }
 
+    { // Once all of our components have been prepared, check if this requset involves a SortSpec.
+      // If it does, and if our request includes a cursorMark param, then parse & init the CursorMark state
+      // (This must happen after the prepare() of all components, because any component may have modified the SortSpec)
+      final SortSpec spec = rb.getSortSpec();
+      final String cursorStr = rb.req.getParams().get(CursorMarkParams.CURSOR_MARK_PARAM);
+      if (null != spec && null != cursorStr) {
+        final CursorMark cursorMark = new CursorMark(rb.req.getSchema(), spec);
+        cursorMark.parseSerializedTotem(cursorStr);
+        rb.setCursorMark(cursorMark);
+      }
+    }
+    
     if (!rb.isDistrib) {
       // a normal non-distributed request
 

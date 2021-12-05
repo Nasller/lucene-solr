@@ -23,13 +23,13 @@ For the European languages, tokenization is fairly straightforward. Tokens are d
 
 In other languages the tokenization rules are often not so simple. Some European languages may also require special tokenization rules, such as rules for decompounding German words.
 
-For information about language detection at index time, see <<detecting-languages-during-indexing.adoc#detecting-languages-during-indexing,Detecting Languages During Indexing>>.
+For information about language detection at index time, see <<detecting-languages-during-indexing.adoc#,Detecting Languages During Indexing>>.
 
 == KeywordMarkerFilterFactory
 
 Protects words from being modified by stemmers. A customized protected word list may be specified with the "protected" attribute in the schema. Any words in the protected word list will not be modified by any stemmer in Solr.
 
-A sample Solr `protwords.txt` with comments can be found in the `sample_techproducts_configs` <<config-sets.adoc#config-sets,configset>> directory:
+A sample Solr `protwords.txt` with comments can be found in the `sample_techproducts_configs` <<config-sets.adoc#,configset>> directory:
 
 [source,xml]
 ----
@@ -103,7 +103,7 @@ Compound words are most commonly found in Germanic languages.
 
 *Arguments:*
 
-`dictionary`:: (required) The path of a file that contains a list of simple words, one per line. Blank lines and lines that begin with "#" are ignored.  See <<resource-loading.adoc#resource-loading,Resource Loading>> for more information.
+`dictionary`:: (required) The path of a file that contains a list of simple words, one per line. Blank lines and lines that begin with "`#`" are ignored.  See <<resource-loading.adoc#,Resource Loading>> for more information.
 
 `minWordSize`:: (integer, default 5) Any token shorter than this is not decompounded.
 
@@ -380,9 +380,9 @@ The OpenNLP Tokenizer takes two language-specific binary model files as paramete
 
 *Arguments:*
 
-`sentenceModel`:: (required) The path of a language-specific OpenNLP sentence detection model file. See <<resource-loading.adoc#resource-loading,Resource Loading>> for more information.
+`sentenceModel`:: (required) The path of a language-specific OpenNLP sentence detection model file. See <<resource-loading.adoc#,Resource Loading>> for more information.
 
-`tokenizerModel`:: (required) The path of a language-specific OpenNLP tokenization model file. See <<resource-loading.adoc#resource-loading,Resource Loading>> for more information.
+`tokenizerModel`:: (required) The path of a language-specific OpenNLP tokenization model file. See <<resource-loading.adoc#,Resource Loading>> for more information.
 
 *Example:*
 
@@ -405,7 +405,7 @@ NOTE: Lucene currently does not index token types, so if you want to keep this i
 
 *Arguments:*
 
-`posTaggerModel`:: (required) The path of a language-specific OpenNLP POS tagger model file. See <<resource-loading.adoc#resource-loading,Resource Loading>> for more information.
+`posTaggerModel`:: (required) The path of a language-specific OpenNLP POS tagger model file. See <<resource-loading.adoc#,Resource Loading>> for more information.
 
 *Examples:*
 
@@ -478,7 +478,7 @@ NOTE: Lucene currently does not index token types, so if you want to keep this i
 
 *Arguments:*
 
-`chunkerModel`:: (required) The path of a language-specific OpenNLP phrase chunker model file.  See <<resource-loading.adoc#resource-loading,Resource Loading>> for more information.
+`chunkerModel`:: (required) The path of a language-specific OpenNLP phrase chunker model file.  See <<resource-loading.adoc#,Resource Loading>> for more information.
 
 *Examples*:
 
@@ -520,9 +520,9 @@ This filter replaces the text of each token with its lemma. Both a dictionary-ba
 
 Either `dictionary` or `lemmatizerModel` must be provided, and both may be provided - see the examples below:
 
-`dictionary`:: (optional) The path of a lemmatization dictionary file.  See <<resource-loading.adoc#resource-loading,Resource Loading>> for more information. The dictionary file must be encoded as UTF-8, with one entry per line, in the form `word[tab]lemma[tab]part-of-speech`, e.g., `wrote[tab]write[tab]VBD`.
+`dictionary`:: (optional) The path of a lemmatization dictionary file.  See <<resource-loading.adoc#,Resource Loading>> for more information. The dictionary file must be encoded as UTF-8, with one entry per line, in the form `word[tab]lemma[tab]part-of-speech`, e.g., `wrote[tab]write[tab]VBD`.
 
-`lemmatizerModel`:: (optional) The path of a language-specific OpenNLP lemmatizer model file.  See <<resource-loading.adoc#resource-loading,Resource Loading>> for more information.
+`lemmatizerModel`:: (optional) The path of a language-specific OpenNLP lemmatizer model file.  See <<resource-loading.adoc#,Resource Loading>> for more information.
 
 *Examples:*
 
@@ -599,6 +599,7 @@ These factories are each designed to work with specific languages. The languages
 * <<Italian>>
 * <<Irish>>
 * <<Japanese>>
+* <<Korean>>
 * <<Latvian>>
 * <<Norwegian>>
 * <<Persian>>
@@ -1297,7 +1298,7 @@ Removes terms with one of the configured parts-of-speech. `JapaneseTokenizer` an
 
 *Arguments:*
 
-`tags`:: filename for a list of parts-of-speech for which to remove terms; see `conf/lang/stoptags_ja.txt` in the `sample_techproducts_config` <<config-sets.adoc#config-sets,configset>> for an example.
+`tags`:: filename for a list of parts-of-speech for which to remove terms; see `conf/lang/stoptags_ja.txt` in the `sample_techproducts_config` <<config-sets.adoc#,configset>> for an example.
 
 `enablePositionIncrements`:: if `luceneMatchVersion` is `4.3` or earlier and `enablePositionIncrements="false"`, no position holes will be left by this filter when it removes tokens. *This argument is invalid if `luceneMatchVersion` is `5.0` or later.*
 
@@ -1339,6 +1340,72 @@ Example:
   </analyzer>
 </fieldType>
 ----
+
+=== Korean
+
+The Korean (nori) analyzer integrates Lucene's nori analysis module into Solr.
+It uses the https://bitbucket.org/eunjeon/mecab-ko-dic[mecab-ko-dic] dictionary to perform morphological analysis of Korean texts.
+
+The dictionary was built with http://taku910.github.io/mecab/[MeCab] and defines a format for the features adapted for the Korean language.
+
+Nori also has a user dictionary feature that allows overriding the statistical model with your own entries for segmentation, part-of-speech tags, and readings without a need to specify weights.
+
+*Example*:
+
+[source,xml]
+----
+<fieldType name="text_ko" class="solr.TextField" positionIncrementGap="100">
+  <analyzer>
+    <tokenizer class="solr.KoreanTokenizerFactory" decompoundMode="discard" outputUnknownUnigrams="false"/>
+    <filter class="solr.KoreanPartOfSpeechStopFilterFactory" />
+    <filter class="solr.KoreanReadingFormFilterFactory" />
+    <filter class="solr.LowerCaseFilterFactory" />
+  </analyzer>
+</fieldType>
+----
+
+==== Korean Tokenizer
+
+*Factory class*: `solr.KoreanTokenizerFactory`
+
+*Arguments*:
+
+`userDictionary`::
+Path to a user-supplied dictionary to add custom nouns or compound terms to the default dictionary.
+
+`userDictionaryEncoding`::
+Character encoding of the user dictionary.
+
+`decompoundMode`::
+Defines how to handle compound tokens. The options are:
+
+* `none`: No decomposition for tokens.
+* `discard`: (default) Tokens are decomposed and the original form is discarded.
+* `mixed`: Tokens are decomposed and the original form is retained.
+
+`outputUnknownUnigrams`::
+If `true`, unigrams will be output for unknown words.
+The default is `false`.
+
+`discardPunctuation`::
+If `true`, the default, punctuation will be discarded.
+
+==== Korean Part of Speech Stop Filter
+
+This filter removes tokens that match parts of speech tags.
+
+*Factory class*: `solr.KoreanPartOfSpeechStopFilterFactory`
+
+*Arguments*: None.
+
+==== Korean Reading Form Filter
+
+This filter replaces term text with the Reading Attribute, the Hangul transcription of Hanja characters.
+
+*Factory class*: `solr.KoreanReadingFormFilterFactory`
+
+*Arguments*: None.
+
 
 [[hebrew-lao-myanmar-khmer]]
 === Hebrew, Lao, Myanmar, Khmer

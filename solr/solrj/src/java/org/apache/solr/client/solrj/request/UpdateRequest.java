@@ -312,10 +312,12 @@ public class UpdateRequest extends AbstractUpdateRequest {
         String deleteId = entry.getKey();
         Map<String,Object> map = entry.getValue();
         Long version = null;
+        String route = null;
         if (map != null) {
           version = (Long) map.get(VER);
+          route = (String) map.get(_ROUTE_);
         }
-        Slice slice = router.getTargetSlice(deleteId, null, null, null, col);
+        Slice slice = router.getTargetSlice(deleteId, null, route, null, col);
         if (slice == null) {
           return null;
         }
@@ -327,11 +329,11 @@ public class UpdateRequest extends AbstractUpdateRequest {
         T request = routes.get(leaderUrl);
         if (request != null) {
           UpdateRequest urequest = (UpdateRequest) request.getRequest();
-          urequest.deleteById(deleteId, version);
+          urequest.deleteById(deleteId, route, version);
         } else {
           UpdateRequest urequest = new UpdateRequest();
           urequest.setParams(params);
-          urequest.deleteById(deleteId, version);
+          urequest.deleteById(deleteId, route, version);
           urequest.setCommitWithin(getCommitWithin());
           urequest.setBasicAuthCredentials(getBasicAuthUser(), getBasicAuthPassword());
           request = reqSupplier.get(urequest, urls);
@@ -418,8 +420,9 @@ public class UpdateRequest extends AbstractUpdateRequest {
           overwrite = (Boolean) entry.getValue().get(OVERWRITE);
           commitWithin = (Integer) entry.getValue().get(COMMIT_WITHIN);
         }
-        if (overwrite != lastOverwrite || commitWithin != lastCommitWithin
-            || docLists.size() == 0) {
+        if (!Objects.equals(overwrite, lastOverwrite)
+                || !Objects.equals(commitWithin, lastCommitWithin)
+                || docLists.isEmpty()) {
           docList = new LinkedHashMap<>();
           docLists.add(docList);
         }

@@ -1983,7 +1983,6 @@ public class IndexWriter implements Closeable, TwoPhaseCommit, Accountable,
    * @lucene.internal
    * @lucene.experimental
    */
-  @Deprecated
   public Set<String> getFieldNames() {
     return globalFieldNumberMap.getFieldNames(); // FieldNumbers#getFieldNames() returns an unmodifiableSet
   }
@@ -4027,10 +4026,8 @@ public class IndexWriter implements Closeable, TwoPhaseCommit, Accountable,
       assert rld != null: "seg=" + info.info.name;
 
       MergeState.DocMap segDocMap = mergeState.docMaps[i];
-      MergeState.DocMap segLeafDocMap = mergeState.leafDocMaps[i];
-
       carryOverHardDeletes(mergedDeletesAndUpdates, maxDoc, mergeState.liveDocs[i],  merge.getMergeReader().get(i).hardLiveDocs, rld.getHardLiveDocs(),
-          segDocMap, segLeafDocMap);
+          segDocMap);
 
       // Now carry over all doc values updates that were resolved while we were merging, remapping the docIDs to the newly merged docIDs.
       // We only carry over packets that finished resolving; if any are still running (concurrently) they will detect that our merge completed
@@ -4073,7 +4070,7 @@ public class IndexWriter implements Closeable, TwoPhaseCommit, Accountable,
           DocValuesFieldUpdates.Iterator it = updates.iterator();
           int doc;
           while ((doc = it.nextDoc()) != NO_MORE_DOCS) {
-            int mappedDoc = segDocMap.get(segLeafDocMap.get(doc));
+            int mappedDoc = segDocMap.get(doc);
             if (mappedDoc != -1) {
               if (it.hasValue()) {
                 // not deleted
@@ -4124,7 +4121,7 @@ public class IndexWriter implements Closeable, TwoPhaseCommit, Accountable,
                                            Bits mergeLiveDocs, // the liveDocs used to build the segDocMaps
                                            Bits prevHardLiveDocs, // the hard deletes when the merge reader was pulled
                                            Bits currentHardLiveDocs, // the current hard deletes
-                                           MergeState.DocMap segDocMap, MergeState.DocMap segLeafDocMap) throws IOException {
+                                           MergeState.DocMap segDocMap) throws IOException {
 
     assert mergeLiveDocs == null || mergeLiveDocs.length() == maxDoc;
     // if we mix soft and hard deletes we need to make sure that we only carry over deletes
@@ -4164,7 +4161,7 @@ public class IndexWriter implements Closeable, TwoPhaseCommit, Accountable,
             assert currentHardLiveDocs.get(j) == false;
           } else if (carryOverDelete.test(j)) {
             // the document was deleted while we were merging:
-            mergedReadersAndUpdates.delete(segDocMap.get(segLeafDocMap.get(j)));
+            mergedReadersAndUpdates.delete(segDocMap.get(j));
           }
         }
       }
@@ -4174,7 +4171,7 @@ public class IndexWriter implements Closeable, TwoPhaseCommit, Accountable,
       // does:
       for (int j = 0; j < maxDoc; j++) {
         if (carryOverDelete.test(j)) {
-          mergedReadersAndUpdates.delete(segDocMap.get(segLeafDocMap.get(j)));
+          mergedReadersAndUpdates.delete(segDocMap.get(j));
         }
       }
     }
@@ -4785,7 +4782,7 @@ public class IndexWriter implements Closeable, TwoPhaseCommit, Accountable,
                              (mergeState.mergeFieldInfos.hasNorms() ? "norms" : "no norms") + "; " +
                              (mergeState.mergeFieldInfos.hasDocValues() ? "docValues" : "no docValues") + "; " +
                              (mergeState.mergeFieldInfos.hasProx() ? "prox" : "no prox") + "; " +
-                             (mergeState.mergeFieldInfos.hasProx() ? "freqs" : "no freqs") + "; " +
+                             (mergeState.mergeFieldInfos.hasFreq() ? "freqs" : "no freqs") + "; " +
                              (mergeState.mergeFieldInfos.hasPointValues() ? "points" : "no points") + "; " +
                              String.format(Locale.ROOT,
                                            "%.1f sec%s to merge segment [%.2f MB, %.2f MB/sec]",

@@ -504,7 +504,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
       core.getCoreContainer().assertPathAllowed(Paths.get(location));
     }
 
-    URI locationUri = repo.createURI(location);
+    URI locationUri = repo.createDirectoryURI(location);
 
     //If name is not provided then look for the last unnamed( the ones with the snapshot.timestamp format)
     //snapshot folder since we allow snapshots to be taken without providing a name. Pick the latest timestamp.
@@ -527,7 +527,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
       name = "snapshot." + name;
     }
 
-    RestoreCore restoreCore = new RestoreCore(repo, core, locationUri, name);
+    RestoreCore restoreCore = RestoreCore.create(repo, core, locationUri, name);
     try {
       MDC.put("RestoreCore.core", core.getName());
       MDC.put("RestoreCore.backupLocation", location);
@@ -615,7 +615,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
       }
 
         // small race here before the commit point is saved
-      URI locationUri = repo.createURI(location);
+      URI locationUri = repo.createDirectoryURI(location);
       String commitName = params.get(CoreAdminParams.COMMIT_NAME);
       SnapShooter snapShooter = new SnapShooter(repo, core, locationUri, params.get(NAME), commitName);
       snapShooter.validateCreateSnapshot();
@@ -1248,6 +1248,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
         log.info("Poll disabled");
         return;
       }
+      ExecutorUtil.setServerThreadFlag(true); // so PKI auth works
       try {
         log.debug("Polling for index modifications");
         markScheduledExecutionStart();
@@ -1255,6 +1256,8 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
         if (pollListener != null) pollListener.onComplete(core, fetchResult);
       } catch (Exception e) {
         log.error("Exception in fetching index", e);
+      } finally {
+        ExecutorUtil.setServerThreadFlag(null);
       }
     };
     executorService = Executors.newSingleThreadScheduledExecutor(

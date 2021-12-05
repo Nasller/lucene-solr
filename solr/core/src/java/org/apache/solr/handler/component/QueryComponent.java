@@ -189,14 +189,6 @@ public class QueryComponent extends SearchComponent
       rb.setSortSpec( parser.getSortSpec(true) );
       rb.setQparser(parser);
 
-      final String cursorStr = rb.req.getParams().get(CursorMarkParams.CURSOR_MARK_PARAM);
-      if (null != cursorStr) {
-        final CursorMark cursorMark = new CursorMark(rb.req.getSchema(),
-                                                     rb.getSortSpec());
-        cursorMark.parseSerializedTotem(cursorStr);
-        rb.setCursorMark(cursorMark);
-      }
-
       String[] fqs = req.getParams().getParams(CommonParams.FQ);
       if (fqs!=null && fqs.length!=0) {
         List<Query> filters = rb.getFilters();
@@ -240,7 +232,7 @@ public class QueryComponent extends SearchComponent
     SolrQueryRequest req = rb.req;
     SolrParams params = req.getParams();
 
-    if (null != rb.getCursorMark()) {
+    if (null != params.get(CursorMarkParams.CURSOR_MARK_PARAM)) {
       // It's hard to imagine, conceptually, what it would mean to combine
       // grouping with a cursor - so for now we just don't allow the combination at all
       throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Can not use Grouping with " +
@@ -925,14 +917,25 @@ public class QueryComponent extends SearchComponent
           hitCountIsExact = false;
         }
 
-        @SuppressWarnings({"rawtypes"})
-        NamedList sortFieldValues = (NamedList)(srsp.getSolrResponse().getResponse().get("sort_values"));
-        if (sortFieldValues.size()==0 && // we bypass merging this response only if it's partial itself
-                            thisResponseIsPartial) { // but not the previous one!!
-          continue; //fsv timeout yields empty sort_vlaues
+        @SuppressWarnings("unchecked")
+        NamedList<List<Object>> sortFieldValues = (NamedList<List<Object>>)(srsp.getSolrResponse().getResponse().get("sort_values"));
+        if (null == sortFieldValues) {
+          sortFieldValues = new NamedList<>();
         }
-        @SuppressWarnings({"rawtypes"})
-        NamedList unmarshalledSortFieldValues = unmarshalSortValues(ss, sortFieldValues, schema);
+
+        // if the SortSpec contains a field besides score or the Lucene docid, then the values will need to be unmarshalled from
+        // sortFieldValues.
+        boolean needsUnmarshalling = ss.includesNonScoreOrDocField();
+
+        // if we need to unmarshal the sortFieldValues for sorting but we have none, which can happen if partial results are
+        // being returned from the shard, then skip merging the results for the shard. This avoids an exception below.
+        // if the shard returned partial results but we don't need to unmarshal (a normal scoring query), then merge what we got.
+        if (thisResponseIsPartial && sortFieldValues.size() == 0 && needsUnmarshalling) {
+          continue;
+        }
+
+        // Checking needsUnmarshalling saves on iterating the SortFields in the SortSpec again.
+        NamedList<List<Object>> unmarshalledSortFieldValues = needsUnmarshalling ? unmarshalSortValues(ss, sortFieldValues, schema) : new NamedList<>();
 
         // go through every doc in this response, construct a ShardDoc, and
         // put it in the priority queue so it can be ordered.

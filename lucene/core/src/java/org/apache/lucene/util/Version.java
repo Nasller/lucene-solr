@@ -252,32 +252,60 @@ public final class Version {
 
   /**
    * Match settings and bugs in Lucene's 8.8.0 release.
-   * @deprecated (8.8.1) Use latest
+   * @deprecated (8.9.0) Use latest
    */
   @Deprecated
   public static final Version LUCENE_8_8_0 = new Version(8, 8, 0);
 
   /**
    * Match settings and bugs in Lucene's 8.8.1 release.
-   * @deprecated (8.8.2) Use latest
+   * @deprecated Use latest
    */
   @Deprecated
   public static final Version LUCENE_8_8_1 = new Version(8, 8, 1);
 
   /**
    * Match settings and bugs in Lucene's 8.8.2 release.
-   * @deprecated (8.8.3) Use latest
+   * @deprecated Use latest
    */
   @Deprecated
   public static final Version LUCENE_8_8_2 = new Version(8, 8, 2);
 
   /**
-   * Match settings and bugs in Lucene's 8.8.3 release.
+   * Match settings and bugs in Lucene's 8.9.0 release.
+   * @deprecated (8.10.0) Use latest
+   */
+  @Deprecated
+  public static final Version LUCENE_8_9_0 = new Version(8, 9, 0);
+
+  /**
+   * Match settings and bugs in Lucene's 8.10.0 release.
+   * @deprecated (8.11.0) Use latest
+   */
+  @Deprecated
+  public static final Version LUCENE_8_10_0 = new Version(8, 10, 0);
+
+  /**
+   * Match settings and bugs in Lucene's 8.10.1 release.
+   * @deprecated Use latest
+   */
+  @Deprecated
+  public static final Version LUCENE_8_10_1 = new Version(8, 10, 1);
+
+  /**
+   * Match settings and bugs in Lucene's 8.11.0 release.
+   * @deprecated (8.11.1) Use latest
+   */
+  @Deprecated
+  public static final Version LUCENE_8_11_0 = new Version(8, 11, 0);
+
+  /**
+   * Match settings and bugs in Lucene's 8.11.1 release.
    * <p>
    * Use this to get the latest &amp; greatest settings, bug
    * fixes, etc, for Lucene.
    */
-  public static final Version LUCENE_8_8_3 = new Version(8, 8, 3);
+  public static final Version LUCENE_8_11_1 = new Version(8, 11, 1);
 
   // To add a new version:
   //  * Only add above this comment
@@ -298,7 +326,7 @@ public final class Version {
    * some defaults may have changed and may break functionality
    * in your application.
    */
-  public static final Version LATEST = LUCENE_8_8_3;
+  public static final Version LATEST = LUCENE_8_11_1;
 
   /**
    * Constant for backwards compatibility.

@@ -1108,8 +1108,9 @@ def configure_pgp(gpg_todo):
     id = str(input("Please enter your Apache id: (ENTER=skip) "))
     if id.strip() == '':
         return False
-    all_keys = load('https://home.apache.org/keys/group/lucene.asc')
-    lines = all_keys.splitlines()
+    key_url = "https://home.apache.org/keys/committer/%s.asc" % id.strip()
+    committer_key = load(key_url)
+    lines = committer_key.splitlines()
     keyid_linenum = None
     for idx, line in enumerate(lines):
         if line == 'ASF ID: %s' % id:
@@ -1119,7 +1120,7 @@ def configure_pgp(gpg_todo):
         keyid_line = lines[keyid_linenum]
         assert keyid_line.startswith('LDAP PGP key: ')
         gpg_id = keyid_line[14:].replace(" ", "")[-8:]
-        print("Found gpg key id %s on file at Apache (https://home.apache.org/keys/group/lucene.asc)" % gpg_id)
+        print("Found gpg key id %s on file at Apache (%s)" % (gpg_id, key_url))
     else:
         print(textwrap.dedent("""\
             Could not find your GPG key from Apache servers.
@@ -1972,6 +1973,25 @@ def prepare_announce_solr(todo):
         print("Draft already exist, not re-generating")
     return True
 
+
+def check_artifacts_available(todo):
+  try:
+    cdnUrl = expand_jinja("https://dlcdn.apache.org/lucene/java/{{ release_version }}/lucene-{{ release_version }}-src.tgz.asc")
+    load(cdnUrl)
+    print("Found %s" % cdnUrl)
+  except Exception as e:
+    print("Could not fetch %s (%s)" % (cdnUrl, e))
+    return False
+
+  try:
+    mavenUrl = expand_jinja("https://repo1.maven.org/maven2/org/apache/lucene/lucene-core/{{ release_version }}/lucene-core-{{ release_version }}.pom.asc")
+    load(mavenUrl)
+    print("Found %s" % mavenUrl)
+  except Exception as e:
+    print("Could not fetch %s (%s)" % (mavenUrl, e))
+    return False
+
+  return True
 
 def set_java_home(version):
     os.environ['JAVA_HOME'] = state.get_java_home_for_version(version)
