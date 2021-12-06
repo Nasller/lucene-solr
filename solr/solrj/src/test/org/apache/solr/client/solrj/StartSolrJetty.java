@@ -41,7 +41,7 @@ public class StartSolrJetty
     WebAppContext bb = new WebAppContext();
     bb.setServer(server);
     bb.setContextPath("/solr");
-    bb.setWar("webapp/web");
+    bb.setWar("F:/StudyProject/lucene-solr8/solr/webapp/web");
 
 //    // START JMX SERVER
 //    if( true ) {

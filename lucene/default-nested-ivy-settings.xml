@@ -19,7 +19,7 @@
 <ivy-settings>
   <!-- path to local maven repo and default maven layout -->
   <property name="local-maven2-pattern"
-            value="C:/maven-3.6.0/repository/[organisation]/[module]/[revision]/[module]-[revision]"
+            value="D:/maven/repository/[organisation]/[module]/[revision]/[module]-[revision]"
             override="false" />
 
   <!-- set resolver chain as default -->

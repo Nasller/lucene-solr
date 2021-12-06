@@ -18,11 +18,10 @@
 <!-- We're configuring testing to be synchronous due to "logging polution", see SOLR-13268 -->
 <Configuration>
   <Appenders>
-    <Console name="STDERR" target="SYSTEM_ERR">
+    <Console name="STDOUT" target="SYSTEM_OUT">
       <PatternLayout>
         <Pattern>
-          %maxLen{%-4r %-5p (%t) [%X{node_name} %X{collection} %X{shard} %X{replica} %X{core} %X{trace_id}] %c{1.} %m%notEmpty{
-          =>%ex{short}}}{10240}%n
+          %d{yyyy-MM-dd HH:mm:ss.SSS} %-5p (%t) [%X{collection} %X{shard} %X{replica} %X{core}] %c{1.} %m%n
         </Pattern>
       </PatternLayout>
     </Console>
@@ -36,7 +35,7 @@
     <Logger name="org.eclipse.jetty" level="INFO"/>
 
     <Root level="INFO">
-      <AppenderRef ref="STDERR"/>
+      <AppenderRef ref="STDOUT"/>
     </Root>
   </Loggers>
 </Configuration>
