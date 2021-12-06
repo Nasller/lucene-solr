@@ -1,0 +1,101 @@
+<schema name="default-config" version="1.6">
+  <uniqueKey>id</uniqueKey>
+  <fieldType name="binary" class="solr.BinaryField"/>
+  <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
+  <fieldType name="booleans" class="solr.BoolField" sortMissingLast="true" multiValued="true"/>
+  <fieldType name="location" class="solr.LatLonPointSpatialField" docValues="true"/>
+  <fieldType name="pdate" class="solr.DatePointField" docValues="true"/>
+  <fieldType name="pdates" class="solr.DatePointField" docValues="true" multiValued="true"/>
+  <fieldType name="pdouble" class="solr.DoublePointField" docValues="true"/>
+  <fieldType name="pdoubles" class="solr.DoublePointField" docValues="true" multiValued="true"/>
+  <fieldType name="pfloat" class="solr.FloatPointField" docValues="true"/>
+  <fieldType name="pfloats" class="solr.FloatPointField" docValues="true" multiValued="true"/>
+  <fieldType name="pint" class="solr.IntPointField" docValues="true"/>
+  <fieldType name="pints" class="solr.IntPointField" docValues="true" multiValued="true"/>
+  <fieldType name="plong" class="solr.LongPointField" docValues="true"/>
+  <fieldType name="plongs" class="solr.LongPointField" docValues="true" multiValued="true"/>
+  <fieldType name="point" class="solr.PointType" subFieldSuffix="_d" dimension="2"/>
+  <fieldType name="random" class="solr.RandomSortField" indexed="true"/>
+  <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true"/>
+  <fieldType name="strings" class="solr.StrField" sortMissingLast="true" docValues="true" multiValued="true"/>
+  <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
+    <analyzer type="index">
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+    </analyzer>
+  </fieldType>
+  <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100" multiValued="true">
+    <analyzer type="index">
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+      <filter class="solr.SynonymGraphFilterFactory" expand="true" ignoreCase="true" synonyms="synonyms.txt"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+    </analyzer>
+  </fieldType>
+  <field name="_version_" type="plong" indexed="false" stored="false"/>
+  <field name="avgPrice" type="pdouble" multiValued="false" indexed="true" stored="true"/>
+  <field name="brokerIds" type="plong" uninvertible="true" multiValued="true" indexed="true" stored="true"/>
+  <field name="businessIds" type="pint" multiValued="true" indexed="true" stored="true"/>
+  <field name="businessNames" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="city" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="completionDate" type="pdate" multiValued="false" indexed="true" stored="true"/>
+  <field name="createTime" type="pdate" multiValued="false" indexed="true" stored="true"/>
+  <field name="decoration" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="discountTitle" type="string" uninvertible="true" indexed="true" stored="true"/>
+  <field name="features" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="finishTime" type="pdate" multiValued="false" indexed="true" stored="true"/>
+  <field name="gardenAddress" type="text" multiValued="false" indexed="true" stored="true"/>
+  <field name="gardenAlias" type="text" multiValued="false" indexed="true" stored="true"/>
+  <field name="gardenId" type="plong" multiValued="false" indexed="true" stored="true"/>
+  <field name="gardenName" type="text" multiValued="false" indexed="true" stored="true"/>
+  <field name="houseType" type="pint" uninvertible="true" multiValued="true" indexed="true" stored="true"/>
+  <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
+  <field name="internalId" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="keyword" type="text" multiValued="true" indexed="true" stored="false"/>
+  <field name="latitude" type="pdouble" multiValued="false" indexed="true" stored="true"/>
+  <field name="layoutArea" type="pdoubles" uninvertible="true" multiValued="true" indexed="true" stored="true"/>
+  <field name="lineIds" type="pint" multiValued="true" indexed="true" stored="true"/>
+  <field name="lineNames" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="location" type="location" indexed="true" stored="true"/>
+  <field name="longitude" type="pdouble" multiValued="false" indexed="true" stored="true"/>
+  <field name="maxTotalPrice" type="pdouble" multiValued="false" indexed="true" stored="true"/>
+  <field name="middleSchoolIds" type="pint" multiValued="true" indexed="true" stored="true"/>
+  <field name="minTotalPrice" type="pdouble" multiValued="false" indexed="true" stored="true"/>
+  <field name="newhouseId" type="plong" multiValued="false" indexed="true" stored="true"/>
+  <field name="openDate" type="pdate" multiValued="false" indexed="true" stored="true"/>
+  <field name="pictureUrl" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="planId" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="primarySchoolIds" type="pint" multiValued="true" indexed="true" stored="true"/>
+  <field name="propertyType" type="string" uninvertible="true" indexed="true" required="false" stored="true"/>
+  <field name="propertyTypeUses" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="ranking" type="pint" multiValued="false" indexed="true" stored="true"/>
+  <field name="recommendBrokerIds" type="plong" uninvertible="true" multiValued="true" indexed="true" stored="true"/>
+  <field name="refreshTime" type="pdate" multiValued="false" indexed="true" stored="true"/>
+  <field name="regionIds" type="pint" multiValued="true" indexed="true" stored="true"/>
+  <field name="regionNames" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="saleStatus" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="schoolNames" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="sortField" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="source" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="stationIds" type="pint" multiValued="true" indexed="true" stored="true"/>
+  <field name="stationNames" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="subwayDesc" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="subwayDistance" type="pint" multiValued="false" indexed="true" stored="true"/>
+  <field name="topNumber" type="pint" multiValued="false" indexed="true" stored="true"/>
+  <field name="updateTime" type="pdate" multiValued="false" indexed="true" stored="true"/>
+  <dynamicField name="random_*" type="random" indexed="true" stored="true"/>
+  <copyField source="gardenAddress" dest="keyword"/>
+  <copyField source="gardenAlias" dest="keyword"/>
+  <copyField source="gardenName" dest="keyword"/>
+</schema>
