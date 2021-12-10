@@ -35,3 +35,4 @@ gradle.properties
 gradle/
 gradlew
 gradlew.bat
+/solr/server/backup/**/data/
