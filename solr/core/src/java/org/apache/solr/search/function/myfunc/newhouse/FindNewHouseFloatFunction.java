@@ -34,7 +34,7 @@ public class FindNewHouseFloatFunction extends MultiFloatFunction {
 			score += findHouseUtil.computerIdsScore(map,"stationIds");
 			//户型结果打分
 			score += findHouseUtil.computerCustomScore(map,"houseType",(check,params)->
-					(params.equals("0") && Integer.parseInt(check) > 5) || check.equals(params));
+					("0".equals(params) && Integer.parseInt(check) > 5) || check.equals(params));
 			//面积结果打分
 			score += findHouseUtil.computerCustomScore(map,"layoutArea",(check,params)->{
 				String[] split = params.split("-");
