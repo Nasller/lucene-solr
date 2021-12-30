@@ -15,6 +15,7 @@ public class FindNewHouseValueSourceParser extends ValueSourceParser {
 	public ValueSource parse(FunctionQParser fp) throws SyntaxError {
 		List<ValueSource> list = new ArrayList<>();
 		list.add(getValueSource(fp,"sortField"));
+		list.addAll(fp.parseValueSourceList());
 		return new FindNewHouseFloatFunction(fp.getReq().getParams(),list.toArray(new ValueSource[0]));
 	}
 
