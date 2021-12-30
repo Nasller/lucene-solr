@@ -43,9 +43,9 @@
     <vc-browse-base-url>https://git1-us-west.apache.org/repos/asf?p=lucene-solr.git;a=tree</vc-browse-base-url>
     <specification.version>7.7.4</specification.version>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
-    <java.compat.version>8</java.compat.version>
+    <java.compat.version>11</java.compat.version>
     <!-- HACK: the enforce plugin does not like new versioning: -->
-    <java.legacy-compat.version>1.${java.compat.version}</java.legacy-compat.version>
+    <java.legacy-compat.version>${java.compat.version}</java.legacy-compat.version>
     <jetty.version>9.3.8.v20160314</jetty.version>
 
     <!-- RandomizedTesting library system properties -->
