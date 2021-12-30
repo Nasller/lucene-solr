@@ -1,4 +1,4 @@
-package org.apache.solr.search.function.myfunc;
+package org.apache.solr.search.function.myfunc.common;
 
 
 import org.apache.commons.lang.StringUtils;

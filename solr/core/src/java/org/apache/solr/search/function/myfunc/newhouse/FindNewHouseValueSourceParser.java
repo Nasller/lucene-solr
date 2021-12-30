@@ -9,14 +9,13 @@ import org.apache.solr.search.ValueSourceParser;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewHouseSortValueSourceParser extends ValueSourceParser {
+public class FindNewHouseValueSourceParser extends ValueSourceParser {
 
 	@Override
 	public ValueSource parse(FunctionQParser fp) throws SyntaxError {
 		List<ValueSource> list = new ArrayList<>();
-		list.add(getValueSource(fp,"gardenName"));
-		list.addAll(fp.parseValueSourceList());
-		return new NewHouseSortFloatFunction(fp.getReq().getSearcher(),list.toArray(new ValueSource[0]));
+		list.add(getValueSource(fp,"sortField"));
+		return new FindNewHouseFloatFunction(fp.getReq().getParams(),list.toArray(new ValueSource[0]));
 	}
 
 	public ValueSource getValueSource(FunctionQParser fp, String arg) {

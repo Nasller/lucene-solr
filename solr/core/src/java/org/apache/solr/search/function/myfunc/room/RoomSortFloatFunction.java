@@ -4,7 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.MultiFloatFunction;
-import org.apache.solr.search.function.myfunc.SortUtil;
+import org.apache.solr.search.function.myfunc.common.SortUtil;
 
 import java.util.List;
 import java.util.Map;

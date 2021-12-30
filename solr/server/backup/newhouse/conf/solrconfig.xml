@@ -1370,5 +1370,5 @@
 		EditorialMarkerFactory will do exactly that:
 	   <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
 	  -->
-	<valueSourceParser name="newhousesort" class="org.apache.solr.search.function.myfunc.newhouse.NewHouseSortValueSourceParser" />
+	<valueSourceParser name="findnewhouse" class="org.apache.solr.search.function.myfunc.newhouse.FindNewHouseValueSourceParser" />
 </config>
