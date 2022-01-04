@@ -84,7 +84,7 @@ public class FindHouseUtil {
 					//户型大于等于三房的住宅
 					//周边配套满足：医院、学校
 					if(StringUtils.isNotBlank(features) && features.contains("ALONG_LINE") &&
-							StringUtils.isNotBlank(elevator) && (elevator.equals("YES") || elevator.equals("PART")) &&
+							StringUtils.isNotBlank(elevator) && ("YES".equals(elevator) || "PART".equals(elevator)) &&
 							StringUtils.isNotBlank(houseType) && Arrays.stream(houseType.split(",")).anyMatch(o->Integer.parseInt(o) >= 3) &&
 							StringUtils.isNotBlank(surroundType) && surroundType.contains("HOSPITAL") && surroundType.contains("SCHOOL"))
 						score += 1;
