@@ -41,7 +41,6 @@
     <analyzer type="query">
       <tokenizer class="solr.StandardTokenizerFactory"/>
       <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
-      <filter class="solr.SynonymGraphFilterFactory" expand="true" ignoreCase="true" synonyms="synonyms.txt"/>
       <filter class="solr.LowerCaseFilterFactory"/>
     </analyzer>
   </fieldType>
@@ -59,6 +58,7 @@
   <field name="gardenAlias" type="text" multiValued="false" indexed="true" stored="true"/>
   <field name="gardenId" type="plong" multiValued="false" indexed="true" stored="true"/>
   <field name="gardenName" type="text" multiValued="false" indexed="true" stored="true"/>
+  <field name="gardenName_general" type="text_general" multiValued="false" indexed="true" stored="true"/>
   <field name="houseType" type="pint" uninvertible="true" multiValued="true" indexed="true" stored="true"/>
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="internalId" type="string" multiValued="false" indexed="true" stored="true"/>
@@ -96,4 +96,5 @@
   <copyField source="gardenAddress" dest="keyword"/>
   <copyField source="gardenAlias" dest="keyword"/>
   <copyField source="gardenName" dest="keyword"/>
+  <copyField source="gardenName" dest="gardenName_general"/>
 </schema>
