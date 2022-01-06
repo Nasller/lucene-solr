@@ -23,13 +23,13 @@
   <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
       <tokenizer class="solr.StandardTokenizerFactory"/>
-      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
       <filter class="solr.LowerCaseFilterFactory"/>
+      <filter class="solr.EdgeNGramFilterFactory" minGramSize="1" maxGramSize="50"/>
     </analyzer>
     <analyzer type="query">
       <tokenizer class="solr.StandardTokenizerFactory"/>
-      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
       <filter class="solr.LowerCaseFilterFactory"/>
+      <filter class="solr.EdgeNGramFilterFactory" minGramSize="1" maxGramSize="50"/>
     </analyzer>
   </fieldType>
   <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100" multiValued="true">
