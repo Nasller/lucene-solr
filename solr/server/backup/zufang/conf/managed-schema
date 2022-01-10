@@ -20,6 +20,8 @@
   <fieldType name="random" class="solr.RandomSortField" indexed="true"/>
   <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true"/>
   <fieldType name="strings" class="solr.StrField" sortMissingLast="true" docValues="true" multiValued="true"/>
+  <!--docValues为true时即使store为false也会返回值-->
+  <fieldType name="string_custom" class="solr.StrField"/>
   <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
       <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -57,7 +59,10 @@
   <field name="businessNames" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="city" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="createTime" type="pdate" multiValued="false" indexed="true" stored="true"/>
-  <field name="desc" type="string" uninvertible="true" indexed="true" stored="false"/>
+  <!--uninvertible为true时面查询会返回值，相反则会返回空数组，主要用于不需要面查询的情况。
+  当我们知道某些字段被分析时，它们可能包含许多唯一值，这可能会占用大量内存，从而导致高内存使用和长时间的垃圾回收。
+  如果您不需要它，您可以考虑消除运行方面或对分析字段进行排序的可能性，这样就没有人能够在生产环境中运行此类查询。-->
+  <field name="desc" type="string_custom" uninvertible="false" indexed="true" stored="false"/>
   <field name="direction" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="features" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
