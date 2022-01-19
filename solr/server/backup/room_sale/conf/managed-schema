@@ -51,6 +51,8 @@
   <field name="bedRoomNames" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="bizType" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="brokerId" type="plong" multiValued="false" indexed="true" stored="true"/>
+  <field name="brokerIdAndOrgIds" type="string" uninvertible="true" multiValued="true" indexed="true" stored="true"/>
+  <field name="brokerIds" type="plong" uninvertible="true" multiValued="true" indexed="true" stored="true"/>
   <field name="brokerName" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="buildYear" type="pint" multiValued="false" indexed="true" stored="true"/>
   <field name="buildingArea" type="pdouble" uninvertible="true" indexed="true" stored="true"/>
@@ -70,6 +72,9 @@
   <field name="gardenAlias" type="text" multiValued="false" indexed="true" stored="true"/>
   <field name="gardenId" type="plong" multiValued="false" indexed="true" stored="true"/>
   <field name="gardenName" type="text" multiValued="false" indexed="true" stored="true"/>
+  <field name="goldBrokerIds" type="plong" uninvertible="true" multiValued="true" indexed="true" stored="true"/>
+  <field name="hasComment" type="string" uninvertible="true" indexed="true" stored="true"/>
+  <field name="hasVR" type="string" uninvertible="true" indexed="true" stored="true"/>
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="internalId" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="keyword" type="text" multiValued="true" indexed="true" stored="false"/>
@@ -84,6 +89,7 @@
   <field name="middleSchoolIds" type="pint" multiValued="true" indexed="true" stored="true"/>
   <field name="pictureUrl" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="price" type="pdouble" multiValued="false" indexed="true" stored="true"/>
+  <field name="priceType" type="string" uninvertible="true" indexed="true" stored="true"/>
   <field name="primarySchoolIds" type="pint" multiValued="true" indexed="true" stored="true"/>
   <field name="propertyType" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="propertyTypeUses" type="string" uninvertible="true" multiValued="true" indexed="true" stored="true"/>
@@ -93,6 +99,9 @@
   <field name="regionIds" type="pint" multiValued="true" indexed="true" stored="true"/>
   <field name="regionNames" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="roomArea" type="pdouble" multiValued="false" indexed="true" stored="true"/>
+  <field name="roomCommentBrokerId" type="plong" uninvertible="true" indexed="true" stored="true"/>
+  <field name="roomCommentBrokerName" type="string" uninvertible="true" indexed="true" stored="true"/>
+  <field name="roomCommentStatus" type="string" uninvertible="true" indexed="true" stored="true"/>
   <field name="roomId" type="plong" multiValued="false" indexed="true" stored="true"/>
   <field name="roomSource" type="text" multiValued="false" indexed="true" stored="true"/>
   <field name="roomType" type="string" multiValued="false" indexed="true" stored="true"/>

@@ -1359,5 +1359,6 @@
 	  -->
 
 	<valueSourceParser name="roomsort" class="org.apache.solr.search.function.myfunc.room.RoomSortValueSourceParser"/>
+	<valueSourceParser name="findSaleSort" class="org.apache.solr.search.function.myfunc.room.FindSaleValueSourceParser"/>
 
 </config>
