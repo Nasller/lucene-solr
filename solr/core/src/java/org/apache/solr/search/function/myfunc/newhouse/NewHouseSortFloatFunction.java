@@ -26,7 +26,7 @@ public class NewHouseSortFloatFunction extends OnlineMultiFloatFunction {
             if(SortUtil.isNotBlank(ids)){
                 List<Long> newhouseIds = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
                 if (newhouseIds.contains(id)) {
-                    return (200-newhouseIds.indexOf(id))*100 + ranking + cityCount;
+                    return (200-newhouseIds.indexOf(id))*100;
                 }
             }
             return ranking + cityCount;
