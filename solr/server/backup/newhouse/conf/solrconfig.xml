@@ -1367,4 +1367,5 @@
 	   <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
 	  -->
 	<valueSourceParser name="findnewhouse" class="org.apache.solr.search.function.myfunc.newhouse.FindNewHouseValueSourceParser" />
+	<valueSourceParser name="newHouseSort" class="org.apache.solr.search.function.myfunc.newhouse.NewHouseSortValueSourceParser" />
 </config>
