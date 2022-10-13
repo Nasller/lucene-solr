@@ -23,8 +23,8 @@
 
 /server/logs/
 /server/solr/zoo_data/
-/server/solr-webapp
-/server/solr/**/data/
+/server/solr-webapp/
+/server/solr/
 /server/backup/**/data/
 *.out
 *.err

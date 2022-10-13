@@ -29,7 +29,8 @@ public class StartSolrJetty
 {
   public static void main( String[] args ) 
   {
-  	//-DzkHost=127.0.0.1:2181/nasller
+    //-DzkRun自带zookeeper
+  	//-DzkHost=127.0.0.1:2181/solr
 	//-DzkClientTimeout=15000
 
     Server server = new Server();

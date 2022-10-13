@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ZkUpConfig" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.apache.solr.cloud.ZkCLI" />
+    <module name="solr-core" />
+    <option name="PROGRAM_PARAMETERS" value="-zkhost 127.0.0.1:9983 -cmd upconfig -confname zufang -confdir $PROJECT_DIR$/solr/server/cloud/zufang" />
+    <selectedOptions>
+      <option name="environmentVariables" visible="false" />
+    </selectedOptions>
+    <shortenClasspath name="MANIFEST" />
+    <option name="VM_PARAMETERS" value="-Dsolr.log.dir=$PROJECT_DIR$/solr/server/logs/zk.log" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

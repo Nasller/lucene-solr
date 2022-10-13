@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="StartSolrJetty" type="Application" factoryName="Application" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="org.apache.solr.client.solrj.StartSolrJetty" />
+    <module name="solr-solrj-tests" />
+    <selectedOptions>
+      <option name="environmentVariables" visible="false" />
+    </selectedOptions>
+    <shortenClasspath name="MANIFEST" />
+    <option name="VM_PARAMETERS" value="-Dhost=127.0.0.1 -Duser.timezone=UTC -Dsolr.default.confdir=$PROJECT_DIR$/solr/server/backup/_default/conf -Djetty.home=$PROJECT_DIR$/solr/server/etc -Dsolr.solr.home=$PROJECT_DIR$/solr/server/backup -Dsolr.install.dir=$PROJECT_DIR$/maven-build/solr -Dsolr.log.dir=$PROJECT_DIR$/solr/server/logs/solr.log" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
