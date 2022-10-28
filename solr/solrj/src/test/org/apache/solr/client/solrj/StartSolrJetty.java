@@ -37,7 +37,6 @@ public class StartSolrJetty
     ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory());
     // Set some timeout options to make debugging easier.
     connector.setIdleTimeout(1000 * 60 * 60);
-    connector.setSoLingerTime(-1);
     connector.setPort(8983);
     server.setConnectors(new Connector[] { connector });
     
