@@ -3,11 +3,34 @@ Lucene Change Log
 For more information on past and future Lucene versions, please see:
 http://s.apache.org/luceneversions
 
+======================= Lucene 8.11.3 =======================
+
+Bug Fixes
+---------------------
+* LUCENE-9580: Fix bug in the polygon tessellator when introducing collinear edges during polygon 
+  splitting. (Ignacio Vera)  
+  
+* LUCENE-10470: Check if polygon has been successfully tessellated before we fail (we are failing some valid
+  tessellations) and allow filtering edges that fold on top of the previous one. (Ignacio Vera)    
+
+* LUCENE-10563: Fix failure to tessellate complex polygon (Craig Taverner)
+
+* LUCENE-10678: Fix potential overflow when building a BKD tree with more than 4 billion points. The overflow
+  occurs when computing the partition point. (Ignacio Vera)
+
 ======================= Lucene 8.11.2 =======================
 
 Bug Fixes
 ---------------------
-(No changes)
+* LUCENE-10564: Make sure SparseFixedBitSet#or updates ramBytesUsed. (Julie Tibshirani)
+
+* LUCENE-10477: Highlighter: WeightedSpanTermExtractor.extractWeightedSpanTerms to Query#rewrite
+  multiple times if necessary. (Christine Poerschke, Adrien Grand)
+
+Optimizations
+---------------------
+
+* LUCENE-10481: FacetsCollector will not request scores if it does not use them. (Mike Drob)
 
 ======================= Lucene 8.11.1 =======================
 

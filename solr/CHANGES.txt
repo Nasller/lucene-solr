@@ -4,6 +4,36 @@ This file lists Solr's raw release notes with details of every change to Solr.
 Most people will find the solr-upgrade-notes.adoc file more approachable.
 https://github.com/apache/solr/blob/main/solr/solr-ref-guide/src/solr-upgrade-notes.adoc
 
+==================  8.11.3 ==================
+
+Consult the LUCENE_CHANGES.txt file for additional, low level, changes in this release.
+
+Bug Fixes
+---------------------
+* SOLR-16429: Add AWS STS support in s3-repository (Josh Souza via Houston Putman and Kevin Risden)
+
+* SOLR-14679: Fix continuously growing TLOGs on TLOG replicas (Viktor Molnár via Houston Putman)
+
+* SOLR-16293: Luke request fails for document with a binary field (Kevin Risden)
+
+* SOLR-16477: Collection RENAME api creates broken alias (Alex Deparvu via Kevin Risden)
+
+* SOLR-16274: HEAD request for managed resource returns 500 Server Error (Kevin Risden)
+
+Other Changes
+---------------------
+* SOLR-16141: Upgrade Apache Tika to 1.28.4 (Kevin Risden)
+
+* SOLR-16324: Upgrade commons-configuration2 to 2.8.0 and commons-text to 1.9 (Kevin Risden)
+
+* SOLR-16332: Upgrade Jetty to 9.4.48.v20220622 (Kevin Risden)
+
+* SOLR-16424: Upgrade Netty to 4.1.82.Final (Kevin Risden)
+
+* SOLR-16421: Upgrade Apache Calcite to 1.32.0 and Avatica to 1.22.0 (Kevin Risden)
+
+* SOLR-16464: Upgrade commons-text to 1.10.0 (Kevin Risden)
+
 ==================  8.11.2 ==================
 
 Consult the LUCENE_CHANGES.txt file for additional, low level, changes in this release.
@@ -18,6 +48,56 @@ Bug Fixes
   of re-fetching expired remote keys from other nodes. (Tomás Fernández Löbbe)
 
 * SOLR-15558: Don't wait for zombie processes to exit when stopping. (Colvin Cowie)
+
+* SOLR-15587: Don't use the UrlScheme singleton on the client-side to determine cluster's scheme,
+  only get from ClusterState provider impl (Timothy Potter)
+
+* SOLR-14569: Configuring a shardHandlerFactory on the /select requestHandler results in HTTP 401 when searching on alias
+  in secured Solr. (Isabelle Giguere, Jason Gerlowski, Anshum Gupta, Mark Mark Miller)
+
+* SOLR-15974: Remove Calcite's ENUMERABLE_AGGREGATE_RULE as Solr only supports push-down for LogicalAggregate (Timothy Potter, Kiran Chitturi)
+
+* SOLR-16009: Force Calcite's Rel simplify config flag to false to avoid erasing filters that are meaningful to Solr,
+  but look like nonsense to Calcite, such as AND'd filters on the same multi-valued field (Timothy Potter, Kiran Chitturi)
+
+* SOLR-16095: Upgrade JQuery to 3.5.1 in velocity contrib module (Bence Szabo via Jan Høydahl)
+
+* SOLR-16022: Enforce special character requirements on passwords with length less than 15 (Timothy Potter)
+
+* SOLR-15849: Fix the connection reset problem caused by the incorrect use of 4LW with \n when monitoring zooKeeper status (Fa Ming).
+
+* SOLR-15116: Support a HEAD request for managed resources. (Eric Pugh)
+
+* SOLR-16089: Fix empty columns in Cloud Node UI Screen when replica is in down state. (hossman)
+
+* SOLR-16145: Fix very rare NPE in SolrCloud rejoinOverseerElection. (David Smiley)
+
+* SOLR-16168: Spellcheck NPE if invalid dictionary name is provided (Kevin Risden)
+
+* SOLR-15968: Hide annoying WARN log from bin/solr zk command (janhoy, Mike Drob)
+
+* SOLR-16075: ShowFileHandler path parameter is now validated to be relative to instance conf dir in standalone mode (janhoy)
+
+* SOLR-16019: UTF-8 parsing errors for parameters should cause a HTTP 400 status code, not 500 (janhoy, Matthias Pigulla)
+
+* SOLR-16143: SolrConfig can miss updates from ZooKeeper when deleting and recreating file items (Mike Drob)
+
+* SOLR-16199: Improve query syntax construction for SQL LIKE clause with phrases and wildcards (Kiran Chitturi, Aroop Ganguly, Amrit Sarkar via Timothy Potter)
+
+* SOLR-16191: Validate that installed ps utility supports -p flag, so that we do not inadvertantly stop the wrong process. (Mike Drob, Michael Gibney)
+
+* SOLR-16213: Upgrade Jackson to version 2.13.3 (janhoy)
+
+* SOLR-16215: Escape query characters in Solr SQL Array UDF functions (Kiran Chitturi via Timothy Potter)
+
+* SOLR-15965: Use better signatures for the PKI Authentication plugin. (Mike Drob)
+
+* SOLR-16209: Rolling restart will no longer trigger as much PKI Plugin error logging. (Mike Drob, Tomás Fernández Löbbe)
+
+* SOLR-16227: Solr SQL query parsing fails on multiple LIKE clauses and multiple terms
+  (Kiran Chitturi via David Smiley)
+
+* SOLR-16218: failOnVersionConflicts option not working for in-place updates (Lamine Idjeraoui, Houston Putman, Anshum Gupta)
 
 ==================  8.11.1 ==================
 
@@ -137,7 +217,7 @@ Other Changes
   - errorprone: 2.9.0
   - gcp-client: 1.32.1
   (Houston Putman)
-  
+
 * SOLR-15269: Upgrade httpclient and httpmime to 4.5.13.  (ventry)
 
 ==================  8.10.0 ==================
