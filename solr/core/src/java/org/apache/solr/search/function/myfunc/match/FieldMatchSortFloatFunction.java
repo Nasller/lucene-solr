@@ -5,24 +5,26 @@ import org.apache.lucene.queries.function.ValueSource;
 import org.apache.solr.search.function.myfunc.OnlineMultiFloatFunction;
 
 import java.util.List;
+import java.util.Map;
 
 public class FieldMatchSortFloatFunction extends OnlineMultiFloatFunction {
-	private final List<FieldMatchModel> list;
+	private final Map<ValueSource,List<FieldMatchModel>> fieldMap;
 
-	public FieldMatchSortFloatFunction(ValueSource[] sources, List<FieldMatchModel> list) {
+	public FieldMatchSortFloatFunction(ValueSource[] sources, Map<ValueSource,List<FieldMatchModel>> fieldMap) {
 		super(sources);
-		this.list = list;
+		this.fieldMap = fieldMap;
 	}
 
 	@Override
 	protected float func(int doc, FunctionValues[] valsArr) {
-		if (!list.isEmpty()) {
+		if (!fieldMap.isEmpty()) {
 			float score = 0;
 			for (int i = 0, valsArrLength = valsArr.length; i < valsArrLength; i++) {
 				try {
-					FieldMatchModel model = list.get(i);
 					Object value = valsArr[i].objectVal(doc);
-					if(model.getMatchRuleType().getPredicate().test(model,value)) score += model.getBoost();
+					for (FieldMatchModel model : fieldMap.get(sources[i])) {
+						if(model.getMatchRuleType().getPredicate().test(model,value)) score += model.getBoost();
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

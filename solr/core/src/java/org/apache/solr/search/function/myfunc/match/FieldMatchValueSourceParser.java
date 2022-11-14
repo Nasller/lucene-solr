@@ -7,7 +7,9 @@ import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FieldMatchValueSourceParser extends ValueSourceParser {
 
@@ -18,8 +20,7 @@ public class FieldMatchValueSourceParser extends ValueSourceParser {
 	 */
 	@Override
 	public ValueSource parse(FunctionQParser fp) throws SyntaxError {
-		List<FieldMatchModel> list = new ArrayList<>();
-		List<ValueSource> valueSource = new ArrayList<>();
+		Map<ValueSource,List<FieldMatchModel>> fieldMap = new LinkedHashMap<>();
 		String[] params = fp.getReq().getParams().getParams("field.match");
 		if(params != null){
 			for (String param : params) {
@@ -34,12 +35,11 @@ public class FieldMatchValueSourceParser extends ValueSourceParser {
 						matchModel.setParam(split[0]);
 						matchModel.setBoost(Integer.parseInt(split[1]));
 					}else matchModel.setParam(splitParam);
-					list.add(matchModel);
-					valueSource.add(getValueSource(fp, matchModel.getField()));
+					fieldMap.computeIfAbsent(getValueSource(fp, matchModel.getField()),o->new ArrayList<>()).add(matchModel);
 				}
 			}
 		}
-		return new FieldMatchSortFloatFunction(valueSource.toArray(new ValueSource[0]),list);
+		return new FieldMatchSortFloatFunction(fieldMap.keySet().toArray(new ValueSource[0]),fieldMap);
 	}
 
 	public ValueSource getValueSource(FunctionQParser fp, String arg) {
