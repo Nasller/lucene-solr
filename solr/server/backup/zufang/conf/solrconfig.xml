@@ -1368,4 +1368,5 @@
 	  -->
 
 	<valueSourceParser name="zufangsort" class="org.apache.solr.search.function.myfunc.zufang.ZuFangSortValueSourceParser" />
+	<valueSourceParser name="fieldMatch" class="org.apache.solr.search.function.myfunc.match.FieldMatchValueSourceParser" />
 </config>
