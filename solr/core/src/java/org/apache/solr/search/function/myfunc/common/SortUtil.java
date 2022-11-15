@@ -55,6 +55,7 @@ public class SortUtil {
 		return value;
 	}
 
+
 	public static Map<String,String> getMap(String sortField,boolean printLog){
 		Map<String, String> map  = new HashMap<>();
 		try {
@@ -66,10 +67,10 @@ public class SortUtil {
 					if(str.trim().length() == 0){
 						continue;
 					}
-					String[] array = str.split(":");
+					String[] array = str.split(":",2);
 					if(array.length == 2){
-						String key = str.split(":")[0];
-						String value = str.split(":")[1];
+						String key = array[0];
+						String value = array[1];
 						if(printLog){
 							System.out.println(key+"-->"+value);
 						}
@@ -87,6 +88,7 @@ public class SortUtil {
 
 		return map;
 	}
+
 
 	public static int getId(String idStr) {
 		Pattern pattern = Pattern.compile("\\d+");

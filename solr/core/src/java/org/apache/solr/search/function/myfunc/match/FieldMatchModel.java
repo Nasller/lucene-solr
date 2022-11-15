@@ -99,7 +99,7 @@ public class FieldMatchModel {
 		return multiValue;
 	}
 
-	public enum MatchRuleType{
+	public enum MatchRuleType {
 		CONTAINS((matchModel,value)->{
 			String param = matchModel.getParam();
 			boolean check = false;
@@ -107,11 +107,11 @@ public class FieldMatchModel {
 				String sortValue = ((Map<String,String>) value).get(matchModel.getSortFieldKey());
 				if(SortUtil.isNotBlank(sortValue)){
 					if(matchModel.getMultiValue()){
-						for (String match : sortValue.split(",")) {
+						for (String match : sortValue.split("\\|\\|\\|")) {
 							check = match.contains(param);
 							if(check) break;
 						}
-					}else check = sortValue.equals(param);
+					}else check = sortValue.contains(param);
 				}
 			} else check = value instanceof String && ((String) value).contains(param);
 			return matchModel.isNotEqual() != check;
@@ -123,7 +123,7 @@ public class FieldMatchModel {
 				String sortValue = ((Map<String,String>) value).get(matchModel.getSortFieldKey());
 				if(SortUtil.isNotBlank(sortValue)){
 					if(matchModel.getMultiValue()){
-						for (String match : sortValue.split(",")) {
+						for (String match : sortValue.split("\\|\\|\\|")) {
 							check = param.equals(match);
 							if(check) break;
 						}
@@ -138,7 +138,7 @@ public class FieldMatchModel {
 				String sortValue = ((Map<String,String>) value).get(matchModel.getSortFieldKey());
 				if(SortUtil.isNotBlank(sortValue)){
 					if(matchModel.getMultiValue()){
-						for (String match : sortValue.split(",")) {
+						for (String match : sortValue.split("\\|\\|\\|")) {
 							check = matchRangeNumber(matchModel, Integer.parseInt(match));
 							if(check) break;
 						}

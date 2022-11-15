@@ -25,6 +25,7 @@ public class FieldMatchSortFloatFunction extends OnlineMultiFloatFunction {
 			for (int i = 0, valsArrLength = valsArr.length; i < valsArrLength; i++) {
 				try {
 					Object value = i == sortFieldIndex ? SortUtil.getMap(valsArr[i].strVal(doc),false) : valsArr[i].objectVal(doc);
+					if(value == null) continue;
 					for (FieldMatchModel model : fieldMap.get(sources[i])) {
 						if(model.getMatchRuleType().getPredicate().test(model,value)) score += model.getBoost();
 					}
