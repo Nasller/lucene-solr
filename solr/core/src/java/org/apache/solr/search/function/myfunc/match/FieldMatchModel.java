@@ -35,10 +35,8 @@ public class FieldMatchModel {
 			param = param.replaceAll("\"","");
 			matchRuleType = MatchRuleType.CONTAINS;
 		}else if(param.contains("TO")){
-			if(param.startsWith("[")) this.rangeStartClosing = true;
-			else this.rangeStartClosing = false;
-			if(param.startsWith("]")) this.rangeEndClosing = true;
-			else this.rangeEndClosing = false;
+			this.rangeStartClosing = param.startsWith("[");
+			this.rangeEndClosing = param.startsWith("]");
 			String[] replace = param.replaceAll("[\\[\\]]","").split(" TO ");
 			this.rangeStart = replace[0];
 			this.rangeEnd = replace[1];
@@ -99,6 +97,7 @@ public class FieldMatchModel {
 		return multiValue;
 	}
 
+	@SuppressWarnings("unchecked")
 	public enum MatchRuleType {
 		CONTAINS((matchModel,value)->{
 			String param = matchModel.getParam();
@@ -152,21 +151,12 @@ public class FieldMatchModel {
 
 		private static boolean matchRangeNumber(FieldMatchModel matchModel, Object value) {
 			if(value instanceof Number){
-				if(value instanceof Integer || value instanceof Long){
-					long param = Long.parseLong(value.toString());
-					long start = Long.parseLong(matchModel.getRangeStart());
-					long end = Long.parseLong(matchModel.getRangeEnd());
-					if((start == param && matchModel.getRangeStartClosing()) || (end == param && matchModel.getRangeEndClosing())){
-						return true;
-					}else return start < param && param < end;
-				}else if(value instanceof Float || value instanceof Double){
-					double param = Double.parseDouble(value.toString());
-					double start = Float.parseFloat(matchModel.getRangeStart());
-					double end = Float.parseFloat(matchModel.getRangeEnd());
-					if((start == param && matchModel.getRangeStartClosing()) || (end == param && matchModel.getRangeEndClosing())){
-						return true;
-					}else return start < param && param < end;
-				}
+				float param = ((Number) value).floatValue();
+				float start = Float.parseFloat(matchModel.getRangeStart());
+				float end = Float.parseFloat(matchModel.getRangeEnd());
+				if((start == param && matchModel.getRangeStartClosing()) || (end == param && matchModel.getRangeEndClosing())){
+					return true;
+				}else return start < param && param < end;
 			}
 			return false;
 		}
