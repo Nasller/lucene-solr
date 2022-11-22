@@ -31,7 +31,9 @@ public class FieldMatchModel {
 	}
 
 	public void setParam(String param) {
-		if(param.startsWith("\"") && param.endsWith("\"")){
+		if("null".equals(param)){
+			matchRuleType = MatchRuleType.NULL;
+		}else if(param.startsWith("\"") && param.endsWith("\"")){
 			param = param.replaceAll("\"","");
 			matchRuleType = MatchRuleType.CONTAINS;
 		}else if(param.contains("TO")){
@@ -99,6 +101,7 @@ public class FieldMatchModel {
 
 	@SuppressWarnings("unchecked")
 	public enum MatchRuleType {
+		NULL((matchModel,value)-> matchModel.isNotEqual() != (value == null || value.toString().length() == 0)),
 		CONTAINS((matchModel,value)->{
 			String param = matchModel.getParam();
 			boolean check = false;
@@ -128,7 +131,7 @@ public class FieldMatchModel {
 						}
 					} else check = param.equals(sortValue);
 				}
-			}else check = param.equals(value.toString());
+			}else if(value != null) check = param.equals(value.toString());
 			return matchModel.isNotEqual() != check;
 		}),
 		RANGE((matchModel,value)->{
@@ -143,7 +146,7 @@ public class FieldMatchModel {
 						}
 					} else check = matchRangeNumber(matchModel, Integer.parseInt(sortValue));
 				}
-			}else{
+			}else if(value != null){
 				check = matchRangeNumber(matchModel, value);
 			}
 			return matchModel.isNotEqual() != check;
