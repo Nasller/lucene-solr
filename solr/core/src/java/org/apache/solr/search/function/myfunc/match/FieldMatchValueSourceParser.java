@@ -15,6 +15,7 @@ import java.util.Map;
 public class FieldMatchValueSourceParser extends ValueSourceParser {
 	public static final String DEFAULT_SORT_FIELD = "sortField";
 	public static final String SORT_FIELD_SUFFIX = ".multiple";
+	public static final String SORT_FIELD_SPLIT = "\\|\\|\\|";
 
 	/**
 	 * 字符串contains equals 数字equals range

@@ -107,7 +107,7 @@ public class FieldMatchModel {
 				String sortValue = ((Map<String,String>) value).get(matchModel.getSortFieldKey());
 				if(SortUtil.isNotBlank(sortValue)){
 					if(matchModel.getMultiValue()){
-						for (String match : sortValue.split("\\|\\|\\|")) {
+						for (String match : sortValue.split(FieldMatchValueSourceParser.SORT_FIELD_SPLIT)) {
 							check = match.contains(param);
 							if(check) break;
 						}
@@ -123,7 +123,7 @@ public class FieldMatchModel {
 				String sortValue = ((Map<String,String>) value).get(matchModel.getSortFieldKey());
 				if(SortUtil.isNotBlank(sortValue)){
 					if(matchModel.getMultiValue()){
-						for (String match : sortValue.split("\\|\\|\\|")) {
+						for (String match : sortValue.split(FieldMatchValueSourceParser.SORT_FIELD_SPLIT)) {
 							check = param.equals(match);
 							if(check) break;
 						}
@@ -138,7 +138,7 @@ public class FieldMatchModel {
 				String sortValue = ((Map<String,String>) value).get(matchModel.getSortFieldKey());
 				if(SortUtil.isNotBlank(sortValue)){
 					if(matchModel.getMultiValue()){
-						for (String match : sortValue.split("\\|\\|\\|")) {
+						for (String match : sortValue.split(FieldMatchValueSourceParser.SORT_FIELD_SPLIT)) {
 							check = matchRangeNumber(matchModel, Integer.parseInt(match));
 							if(check) break;
 						}
@@ -152,24 +152,17 @@ public class FieldMatchModel {
 
 		private static boolean matchRangeNumber(FieldMatchModel matchModel, Object value) {
 			if(value instanceof Number){
-				if(value instanceof Integer){
-					int param = (Integer) value;
-					int start = Integer.parseInt(matchModel.getRangeStart());
-					int end = Integer.parseInt(matchModel.getRangeEnd());
+				if(value instanceof Integer || value instanceof Long){
+					long param = Long.parseLong(value.toString());
+					long start = Long.parseLong(matchModel.getRangeStart());
+					long end = Long.parseLong(matchModel.getRangeEnd());
 					if((start == param && matchModel.getRangeStartClosing()) || (end == param && matchModel.getRangeEndClosing())){
 						return true;
 					}else return start < param && param < end;
-				}else if(value instanceof Float){
-					float param = (Float) value;
-					float start = Float.parseFloat(matchModel.getRangeStart());
-					float end = Float.parseFloat(matchModel.getRangeEnd());
-					if((start == param && matchModel.getRangeStartClosing()) || (end == param && matchModel.getRangeEndClosing())){
-						return true;
-					}else return start < param && param < end;
-				}else if(value instanceof Double){
-					double param = (Double) value;
-					double start = Double.parseDouble(matchModel.getRangeStart());
-					double end = Double.parseDouble(matchModel.getRangeEnd());
+				}else if(value instanceof Float || value instanceof Double){
+					double param = Double.parseDouble(value.toString());
+					double start = Float.parseFloat(matchModel.getRangeStart());
+					double end = Float.parseFloat(matchModel.getRangeEnd());
 					if((start == param && matchModel.getRangeStartClosing()) || (end == param && matchModel.getRangeEndClosing())){
 						return true;
 					}else return start < param && param < end;
