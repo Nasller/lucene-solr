@@ -30,3 +30,4 @@
 *.err
 /solrj/src/test-files/solrj/solr/multicore/core1/data/
 /solrj/src/test-files/solrj/solr/multicore/core0/data/
+/server/backup/**/conf/dataimport.properties
