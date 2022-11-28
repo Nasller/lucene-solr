@@ -1358,7 +1358,5 @@
 	   <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
 	  -->
 
-	<valueSourceParser name="roomsort" class="org.apache.solr.search.function.myfunc.room.RoomSortValueSourceParser"/>
 	<valueSourceParser name="findSaleSort" class="org.apache.solr.search.function.myfunc.room.FindSaleValueSourceParser"/>
-
 </config>

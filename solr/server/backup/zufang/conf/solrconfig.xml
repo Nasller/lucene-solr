@@ -1367,6 +1367,6 @@
 	   <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
 	  -->
 
-	<valueSourceParser name="zufangsort" class="org.apache.solr.search.function.myfunc.zufang.ZuFangSortValueSourceParser" />
+	<valueSourceParser name="zufangPrice" class="org.apache.solr.search.function.myfunc.zufang.ZuFangPriceValueSourceParser" />
 	<valueSourceParser name="fieldMatch" class="org.apache.solr.search.function.myfunc.match.FieldMatchValueSourceParser" />
 </config>

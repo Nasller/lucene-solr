@@ -1,15 +1,14 @@
 package org.apache.solr.search.function.myfunc.newhouse;
 
 import org.apache.lucene.queries.function.ValueSource;
-import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
-import org.apache.solr.search.ValueSourceParser;
+import org.apache.solr.search.function.myfunc.OnlineValueSourceParser;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewHouseSortValueSourceParser extends ValueSourceParser {
+public class NewHouseSortValueSourceParser extends OnlineValueSourceParser {
 
 	@Override
 	public ValueSource parse(FunctionQParser fp) throws SyntaxError {
@@ -19,10 +18,5 @@ public class NewHouseSortValueSourceParser extends ValueSourceParser {
 		list.add(getValueSource(fp, "city"));
 		list.addAll(fp.parseValueSourceList());
 		return new NewHouseSortFloatFunction(list.toArray(new ValueSource[0]));
-	}
-
-	public ValueSource getValueSource(FunctionQParser fp, String arg) {
-		SchemaField f = fp.getReq().getSchema().getField(arg);
-		return f.getType().getValueSource(f, fp);
 	}
 }

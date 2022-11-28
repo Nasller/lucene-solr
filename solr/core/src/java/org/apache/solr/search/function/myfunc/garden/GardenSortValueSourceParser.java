@@ -4,7 +4,7 @@ import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.LiteralValueSource;
 import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
-import org.apache.solr.search.ValueSourceParser;
+import org.apache.solr.search.function.myfunc.OnlineValueSourceParser;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * 小区排序
  */
-public class GardenSortValueSourceParser extends ValueSourceParser {
+public class GardenSortValueSourceParser extends OnlineValueSourceParser {
 
 	@Override
 	public ValueSource parse(FunctionQParser fp) throws SyntaxError {

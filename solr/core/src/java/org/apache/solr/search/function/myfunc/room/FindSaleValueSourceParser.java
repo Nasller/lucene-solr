@@ -1,15 +1,14 @@
 package org.apache.solr.search.function.myfunc.room;
 
 import org.apache.lucene.queries.function.ValueSource;
-import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
-import org.apache.solr.search.ValueSourceParser;
+import org.apache.solr.search.function.myfunc.OnlineValueSourceParser;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FindSaleValueSourceParser extends ValueSourceParser {
+public class FindSaleValueSourceParser extends OnlineValueSourceParser {
 
 	@Override
 	public ValueSource parse(FunctionQParser fp) throws SyntaxError {
@@ -26,10 +25,5 @@ public class FindSaleValueSourceParser extends ValueSourceParser {
 		list.add(getValueSource(fp,"sortField"));
 		list.addAll(fp.parseValueSourceList());
 		return new FindSaleFloatFunction(fp.getReq().getParams(),list.toArray(new ValueSource[0]));
-	}
-
-	public ValueSource getValueSource(FunctionQParser fp, String arg) {
-		SchemaField f = fp.getReq().getSchema().getField(arg);
-		return f.getType().getValueSource(f, fp);
 	}
 }

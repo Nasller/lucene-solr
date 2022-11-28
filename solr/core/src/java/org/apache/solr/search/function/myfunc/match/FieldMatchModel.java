@@ -101,7 +101,14 @@ public class FieldMatchModel {
 
 	@SuppressWarnings("unchecked")
 	public enum MatchRuleType {
-		NULL((matchModel,value)-> matchModel.isNotEqual() != (value == null || value.toString().length() == 0)),
+		NULL((matchModel,value)-> {
+			boolean check;
+			if(value instanceof Map){
+				String sortValue = ((Map<String,String>) value).get(matchModel.getSortFieldKey());
+				check = sortValue == null || sortValue.length() == 0;
+			}else check = value == null || value.toString().length() == 0;
+			return matchModel.isNotEqual() != check;
+		}),
 		CONTAINS((matchModel,value)->{
 			String param = matchModel.getParam();
 			boolean check = false;
