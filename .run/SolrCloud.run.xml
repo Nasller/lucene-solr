@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="SolrCloud" type="Application" factoryName="Application" singleton="true">
     <option name="MAIN_CLASS_NAME" value="org.eclipse.jetty.start.Main" />
-    <module name="lucene-solr" />
+    <module name="solr-core" />
     <option name="PROGRAM_PARAMETERS" value="--module=http" />
     <option name="VM_PARAMETERS" value="-DzkRun -Dhost=127.0.0.1 -Duser.timezone=UTC -Djetty.home=$PROJECT_DIR$/solr/server -Dsolr.solr.home=$PROJECT_DIR$/solr/server/solr -Dsolr.install.dir=$PROJECT_DIR$/maven-build/solr -Dsolr.log.dir=$PROJECT_DIR$/solr/server/logs/solr.log -Dsolr.default.confdir=$PROJECT_DIR$/solr/server/backup/_default/conf" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/solr/server" />
