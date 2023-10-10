@@ -443,6 +443,13 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>start</groupId>
+      <artifactId>start</artifactId>
+      <version>1.0</version>
+      <scope>system</scope>
+      <systemPath>${basedir}/../../../../../solr/server/start.jar</systemPath>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>${module-path}</sourceDirectory>
