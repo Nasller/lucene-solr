@@ -34,3 +34,4 @@ __pycache__
 /maven-build/lucene/**/**/target/
 /maven-build/lucene/**/target/
 /maven-build/target/
+*.iml
